@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 112016ec330e40d4c8cb56a31212844c, type: 3}
+  m_Name: SleepTower
+  m_EditorClassIdentifier: 
+  towerName: SleepTower
+  towerType: 0
+  bulletSpeed: 1
+  skillCastTime: 3
+  damage: 10
+  attackSpeed: 1
+  totalMp: 100
+  towerSprite: {fileID: 21300000, guid: c784fd4744f39724c85b821c7dcc0b3f, type: 3}
+  bulletPrefab: {fileID: 1285418151523038609, guid: 8250322fa3b35c84980a702a8ff5f8fb, type: 3}
+  skillType: 0
+  skillRange: 5
+  skillDuration: 3
+  skillDamage: 50
