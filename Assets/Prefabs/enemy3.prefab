@@ -424,9 +424,9 @@ GameObject:
   m_Component:
   - component: {fileID: 479484}
   - component: {fileID: 21299916}
-  - component: {fileID: 6130984}
-  - component: {fileID: 5053352}
   - component: {fileID: 4847432767128126379}
+  - component: {fileID: 6110630184164077872}
+  - component: {fileID: 7962333299364949673}
   m_Layer: 0
   m_Name: enemy3
   m_TagString: enemies
@@ -506,8 +506,29 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &6130984
-BoxCollider2D:
+--- !u!114 &4847432767128126379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 179280}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b99fb7d73b0b6ba4b8a25a65cfe3c666, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 1000
+  distanceToEnd: 0
+  isEnraged: 0
+  coinsDrop: 10
+  isSkilling: 0
+  healthBar: {fileID: 471050}
+  originalMoveSpeed: 1
+  preferTurn: 1
+  currentToward: {x: 0, y: 0}
+--- !u!58 &6110630184164077872
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -535,23 +556,13 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.01, y: -0.05}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.91, y: 1.6}
-    newSize: {x: 0.25, y: 0.22}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
+  m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Size: {x: 0.05, y: 0.13}
-  m_EdgeRadius: 0
---- !u!50 &5053352
+  m_Radius: 0.955
+--- !u!50 &7962333299364949673
 Rigidbody2D:
   serializedVersion: 4
   m_ObjectHideFlags: 0
@@ -559,14 +570,14 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 179280}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
-  m_AngularDrag: 0.08
-  m_GravityScale: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -577,25 +588,4 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 4
---- !u!114 &4847432767128126379
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 179280}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b99fb7d73b0b6ba4b8a25a65cfe3c666, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 1000
-  distanceToEnd: 0
-  isEnraged: 0
-  coinsDrop: 10
-  isSkilling: 0
-  healthBar: {fileID: 471050}
-  originalMoveSpeed: 1
-  preferTurn: 1
-  currentToward: {x: 0, y: 0}
+  m_Constraints: 0

@@ -201,11 +201,27 @@ public class BattleController : MonoBehaviour
     public void createTower7()
     {
         // createTower(TowerType.Tower7);
+
+        //临时调试，让防御塔出现
+        GameObject tower = GameObject.FindGameObjectWithTag("towers");
+        if (tower != null)
+        {
+            tower.GetComponent<towerCommon>().EnableTower();
+        }
     }
 
     public void createTower8()
     {
         // createTower(TowerType.Tower8);
+
+        //临时调试，让防御塔消失
+        GameObject tower = GameObject.FindGameObjectWithTag("towers");
+        if (tower != null)
+        {
+            tower.GetComponent<towerCommon>().DisableTower();
+        }
+
+
     }
 
     private Vector3 GetMousePosition()

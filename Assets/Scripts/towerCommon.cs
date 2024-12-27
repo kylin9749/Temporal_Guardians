@@ -18,6 +18,8 @@ public class towerCommon : MonoBehaviour
     private MapGrid currentGrid;            // 当前防御塔所在的格子
     private Transform attackRangeImage;     // 攻击范围图片的Transform组件引用
     private CircleCollider2D attackRangeCollider; // 攻击范围碰撞器的引用
+    private float attackSpeedFactor = 1;    // 攻击速度因子
+    public GameObject shadow; //阴影
 
     // 防御塔技能组件
     protected TowerSkillCommon skillComponent;
@@ -174,7 +176,7 @@ public class towerCommon : MonoBehaviour
             bulletScript.SetTarget(CurrentTarget.transform);
             bulletScript.damage = towerData.damage;
             bulletScript.speed = towerData.bulletSpeed; // 子弹速度由防御塔定义
-            bulletScript.SetMovementType(BulletMovementType.Parabolic);
+            bulletScript.SetMovementType(BulletMovementType.Straight);
         }
     }
 
@@ -229,10 +231,15 @@ public class towerCommon : MonoBehaviour
             return;
         }
 
+        if (!enable)
+        {
+            return;
+        }
+
         if (enemyList != null && enemyList.Count > 0 && Time.time >= nextAttackTime)
         {
             Attack();
-            nextAttackTime = Time.time + (1f / towerData.attackSpeed);
+            nextAttackTime = Time.time + (1f / (towerData.attackSpeed * attackSpeedFactor));
         }
 
         // 如果有当前目标，让防御塔朝向目标
@@ -247,6 +254,17 @@ public class towerCommon : MonoBehaviour
         // }
     }
 
+    public void DisableTower()
+    {
+        enable = false;
+        this.GetComponent<SpriteRenderer>().enabled = false;
+    }
+
+    public void EnableTower()
+    {
+        enable = true;
+        this.GetComponent<SpriteRenderer>().enabled = true;
+    }
 
     protected void CastSkill()
     {
@@ -311,5 +329,11 @@ public class towerCommon : MonoBehaviour
     {
         get { return currentGrid; }
         set { currentGrid = value; }
+    }
+
+    public float AttackSpeedFactor
+    {
+        get { return attackSpeedFactor; }
+        set { attackSpeedFactor = value; }
     }
 }

@@ -15,12 +15,12 @@ public class AttackSpeedIncreaseSkill : TowerSkillCommon
             if (grid.Tower != null)
             {
                 //防御塔的攻速增加
-                grid.Tower.GetComponent<towerCommon>().TowerData.attackSpeed *= 2;
+                grid.Tower.GetComponent<towerCommon>().AttackSpeedFactor = 2;
             }
         }
 
         // 给自己加buff
-        tower.TowerData.attackSpeed *= 2;
+        tower.AttackSpeedFactor = 2;
         tower.CurrentMp = 0;
         tower.IsSkilling = false;
 
@@ -30,13 +30,13 @@ public class AttackSpeedIncreaseSkill : TowerSkillCommon
     private IEnumerator ResetAttackSpeedAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
-        tower.TowerData.attackSpeed /= 2;
+        tower.AttackSpeedFactor = 1;
 
         foreach (MapGrid grid in adjacentBases)
         {
             if (grid.Tower != null)
             {
-                grid.Tower.GetComponent<towerCommon>().TowerData.attackSpeed /= 2;
+                grid.Tower.GetComponent<towerCommon>().AttackSpeedFactor = 1;
             }
         }
     }

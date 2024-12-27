@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - enemies
+  - towers
+  - towerzone
   layers:
   - Default
   - TransparentFX
