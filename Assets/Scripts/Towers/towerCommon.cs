@@ -69,7 +69,7 @@ public class towerCommon : MonoBehaviour
         attackRangeImage.localScale = new Vector3(data.attackRange * 2, data.attackRange * 2, 0);
     }
 
-    public System.Type GetSkillType(TowerType towerType)
+    private System.Type GetSkillType(TowerType towerType)
     {
         switch (towerType)
         {

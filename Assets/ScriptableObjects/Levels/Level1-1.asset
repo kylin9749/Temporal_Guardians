@@ -32,3 +32,6 @@ MonoBehaviour:
     - enemyType: 0
       spawnDelay: 3
       spawnPoint: 0
+    - enemyType: 0
+      spawnDelay: 4
+      spawnPoint: 0

@@ -2,47 +2,77 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum EnemyType
-{
-    Stalker,        // 潜行者
-    Mutant,         // 变异者
-    Pathmaker,      // 造路者  
-    Annihilator,    // 抹杀者
-    FrostMage,      // 冰霜法师
-    GuardMage,      // 护卫法师
-    Werewolf,       // 狼人
-    Priest,         // 牧师
-    DarkSummoner,   // 暗黑召唤师
-    DarkPaladin     // 暗黑圣骑士
-}
-
 public class EnemyCommon : MonoBehaviour
 {
-    public float maxHealth = 1000f;           // 最大生命值
+    private EnemyData enemyData;
     private float currentHealth;              // 当前生命值
     private float currentMoveSpeed = 1f;      // 移动速度
-    public float distanceToEnd;              // 离终点的距离
-    public bool isEnraged = false;           // 是否狂暴
-    public int coinsDrop = 10;               // 死亡掉落金币数
+    private bool isEnraged = false;           // 是否狂暴
     public bool isSkilling = false;          // 是否正在释放技能
     public Transform healthBar = null;
-    public float originalMoveSpeed = 1f;
     private int stopCount = 0;
     private object lockObj = new object();
-    private EnemyType enemyType;
-    public bool preferTurn = false;       // 是否偏好转弯
-    public MapGrid currentGrid = null;       // 当前格子
-    public MapGrid nextGrid = null;         // 下一个格子   
-    public Vector2Int currentToward = new Vector2Int(0, 0);
+    private MapGrid currentGrid = null;       // 当前格子
+    private MapGrid nextGrid = null;         // 下一个格子   
+    private Vector2Int currentToward = new Vector2Int(0, 0);
     private bool isDead = false;
-    
+    private EnemySkillCommon skillComponent;
+
+    public void InitializeEnemy(EnemyData data)
+    {
+        // 初始化状态
+        currentHealth = data.maxHealth;
+        currentMoveSpeed = data.originalMoveSpeed;
+        isEnraged = false;
+        
+        // 保存数据引用
+        enemyData = data;
+
+        // 移除现有的技能组件（如果有）
+        var oldSkill = GetComponent<EnemySkillCommon>();
+        if (oldSkill != null)
+            Destroy(oldSkill);
+
+        // 添加新的技能组件
+        System.Type skillType = GetSkillType(data.enemyType);
+        if (skillType != null)
+        {
+            skillComponent = gameObject.AddComponent(skillType) as EnemySkillCommon;
+            if (skillComponent == null)
+            {
+                Debug.LogError($"Failed to add skill component of type {skillType}");
+            }
+        }
+        else
+        {
+            Debug.LogError($"Invalid enemy type: {data.enemyType}");
+        }
+
+        // 设置敌人的图片
+        GetComponent<SpriteRenderer>().sprite = data.enemySprite;
+
+    }
+    private System.Type GetSkillType(EnemyType enemyType)
+    {
+        switch (enemyType)
+        {
+            case EnemyType.Stalker:
+                return typeof(HideInDarkSkill);
+            case EnemyType.Mutant:
+                return typeof(HideInDarkSkill);
+            // ... 其他情况
+            default:
+                return null;
+        }
+    }
+
     // 受到伤害的函数
     public void TakeDamage(float damage)
     {
         Debug.Log($"怪物当前生命值:{currentHealth}, 受到伤害:{damage}");
 
         // 计算血量百分比
-        float healthPercentage = (currentHealth - damage) / maxHealth;
+        float healthPercentage = (currentHealth - damage) / enemyData.maxHealth;
 
         // 限制百分比在0-1之间
         healthPercentage = Mathf.Clamp01(healthPercentage);
@@ -65,17 +95,17 @@ public class EnemyCommon : MonoBehaviour
 
     // 死亡处理函数
     // Start is called before the first frame update
-    public void commonStart()
+    public void Start()
     {
-        currentHealth = maxHealth;
-        currentMoveSpeed = originalMoveSpeed;
+        currentHealth = enemyData.maxHealth;
+        currentMoveSpeed = enemyData.originalMoveSpeed;
     }
 
     // Update is called once per frame
     /// <summary>
     /// 敌人的通用更新函数
     /// </summary>
-    public void commonUpdate()
+    public void Update()
     {
         if (stopCount > 0 || isDead)
         {
@@ -164,12 +194,12 @@ public class EnemyCommon : MonoBehaviour
             foreach(MapGrid grid in bestGrids)
             {
                 Vector2Int nextToward = new Vector2Int(grid.X - currentGrid.X, grid.Y - currentGrid.Y);
-                if(nextToward == currentToward && !preferTurn)
+                if(nextToward == currentToward && !enemyData.preferTurn)
                 {
                     nextGrid = grid;
                     break;
                 }
-                else if(nextToward != currentToward && preferTurn)
+                else if(nextToward != currentToward && enemyData.preferTurn)
                 {
                     nextGrid = grid;
                     break;
@@ -313,7 +343,7 @@ public class EnemyCommon : MonoBehaviour
         else
         {
             //玩家获胜，增加金币
-            BattleController.Instance.UpdateMoney(coinsDrop);
+            BattleController.Instance.UpdateMoney(enemyData.coinsDrop);
         }
         Destroy(gameObject);
     }

@@ -298,18 +298,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 179280}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b99fb7d73b0b6ba4b8a25a65cfe3c666, type: 3}
+  m_Script: {fileID: 11500000, guid: 5283f3145305b974f8b769e15f8f2877, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
-  distanceToEnd: 0
-  isEnraged: 0
-  coinsDrop: 10
   isSkilling: 0
   healthBar: {fileID: 471050}
-  originalMoveSpeed: 1
-  preferTurn: 1
-  currentToward: {x: 0, y: 0}
 --- !u!58 &6110630184164077872
 CircleCollider2D:
   m_ObjectHideFlags: 0

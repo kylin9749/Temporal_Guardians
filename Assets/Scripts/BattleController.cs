@@ -137,20 +137,8 @@ public class BattleController : MonoBehaviour
         foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
         {
             // 在指定出生点生成敌人
-            GameObject enemy = Instantiate(enemyPrefab, transform);
-            if (enemy != null)
-            {
-                // 从mapMaker获取出生点
-                var spawnPoint = MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint];
-                enemy.transform.position = spawnPoint.GridObject.transform.position;
-            }
-
-            // 设置敌人类型
-            EnemyCommon enemyComponent = enemy.GetComponent<EnemyCommon>();
-            if (enemyComponent != null)
-            {
-                
-            }
+            GameObject enemy = EnemyFactory.Instance.CreateEnemy(enemyInfo.enemyType,
+                MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].GridObject.transform.position);
 
             // 等待下一个敌人生成的延迟
             yield return new WaitForSeconds(enemyInfo.spawnDelay);
