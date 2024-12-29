@@ -34,6 +34,8 @@ public class EnemyCommon : MonoBehaviour
     public MapGrid currentGrid = null;       // 当前格子
     public MapGrid nextGrid = null;         // 下一个格子   
     public Vector2Int currentToward = new Vector2Int(0, 0);
+    private bool isDead = false;
+    
     // 受到伤害的函数
     public void TakeDamage(float damage)
     {
@@ -56,7 +58,8 @@ public class EnemyCommon : MonoBehaviour
         
         if(currentHealth <= 0)
         {
-            Die();
+            Die(false);
+            isDead = true;
         }
     }
 
@@ -74,7 +77,7 @@ public class EnemyCommon : MonoBehaviour
     /// </summary>
     public void commonUpdate()
     {
-        if (stopCount > 0)
+        if (stopCount > 0 || isDead)
         {
             return;
         }
@@ -105,7 +108,8 @@ public class EnemyCommon : MonoBehaviour
         // 如果怪物已经走到中心点，则销毁当前怪物并触发掉血逻辑
         if(currentGrid.Type == GridType.Center)
         {
-            Die();
+            Die(true);
+            isDead = true;
             return null;
         }
 
@@ -299,9 +303,18 @@ public class EnemyCommon : MonoBehaviour
         return MapMaker.Instance.CenterGrid;
     }
 
-    protected virtual void Die()
+    protected virtual void Die(bool isEnemyWin)
     {
-        // TODO: 处理金币掉落
+        if(isEnemyWin)
+        {
+            //怪物获胜，减少生命值
+            BattleController.Instance.UpdateHealth(-1);
+        }
+        else
+        {
+            //玩家获胜，增加金币
+            BattleController.Instance.UpdateMoney(coinsDrop);
+        }
         Destroy(gameObject);
     }
 

@@ -40,14 +40,19 @@ public class Bullet : MonoBehaviour
             // 移动子弹
             MoveBullet();
 
-            RotateBullet(transform.position, target.position);
+            //RotateBullet(transform.position, target.position);
 
             // 检查是否击中目标
             float distanceToTarget = Vector3.Distance(transform.position, target.position);
-            if (distanceToTarget < 0.1f) // 可以根据需要调整判定距离
+            if (distanceToTarget < 0.2f) // 可以根据需要调整判定距离
             {
                 // 获取敌人脚本并调用扣血函数
+                Debug.Log($"击中目标");
                 EnemyCommon enemy = target.GetComponent<EnemyCommon>();
+                Debug.Log("target.name = " + target.name);
+                Debug.Log("target.tag = " + target.tag);
+                Debug.Log("target.getComponents = " + target.GetComponents<Component>().Length);
+                Debug.Log($"敌人脚本是否为空: {enemy == null}");
                 if (enemy != null)
                 {
                     enemy.TakeDamage(damage);

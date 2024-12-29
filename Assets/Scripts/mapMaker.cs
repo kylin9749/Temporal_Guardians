@@ -30,7 +30,8 @@ public class MapMaker : MonoBehaviour
     public MapGrid[,] gridObjects;
     //中心格子
     public MapGrid centerGrid;
-
+    //出怪点
+    public List<MapGrid> spawnPoints;
     public static MapMaker Instance;
     //地图原点
     private Vector3 mapOrigin;
@@ -89,7 +90,7 @@ public class MapMaker : MonoBehaviour
         CalculateSize();
         //创建格子对象数组
         gridObjects = new MapGrid[xColumn, yRow];
-
+        spawnPoints = new List<MapGrid>();
         //初始化格子对象数组
         for (int x = 0; x < xColumn; x++)
         {
@@ -150,6 +151,8 @@ public class MapMaker : MonoBehaviour
             {
                 gridObjects[0,i].SpawnType = SpawnPointType.Left;  //左边界
                 gridObjects[xColumn-1,i].SpawnType = SpawnPointType.Right;  //右边界
+                spawnPoints.Add(gridObjects[0,i]);
+                spawnPoints.Add(gridObjects[xColumn-1,i]);
             }
         }
         //纵向道路的上下边界
@@ -159,6 +162,8 @@ public class MapMaker : MonoBehaviour
             {
                 gridObjects[i,0].SpawnType = SpawnPointType.Bottom;  //下边界
                 gridObjects[i,yRow-1].SpawnType = SpawnPointType.Top;  //上边界
+                spawnPoints.Add(gridObjects[i,0]);
+                spawnPoints.Add(gridObjects[i,yRow-1]);
             }
         }
 

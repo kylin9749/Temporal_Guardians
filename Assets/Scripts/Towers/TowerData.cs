@@ -13,6 +13,7 @@ public class TowerData : ScriptableObject
     public Sprite towerSprite;
     public GameObject bulletPrefab;
     public float attackRange = 5f;          // 防御塔的攻击范围
+    public int cost = 50;                   // 防御塔的建造费用
 
     // 技能特定参数
     public TowerSkillType skillType;             // 当前防御塔的技能类型

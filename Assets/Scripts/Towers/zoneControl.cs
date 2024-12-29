@@ -17,6 +17,8 @@ public class zoneControl : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log("other.gameObject.name = " + other.gameObject.name);
+        Debug.Log("other.gameObject.tag = " + other.gameObject.tag);
         if (other.gameObject.CompareTag("enemies"))
         {
             towerCommon tower = transform.parent.GetComponent<towerCommon>();

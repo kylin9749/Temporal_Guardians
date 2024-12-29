@@ -216,6 +216,17 @@ public class towerCommon : MonoBehaviour
             // 如果鼠标左键点击，则设置塔
             if (Input.GetMouseButtonDown(0))
             {
+                // 扣除建造费用
+                if (BattleController.Instance.GetMoney() >= towerData.cost)
+                {
+                    BattleController.Instance.UpdateMoney(-towerData.cost);
+                }
+                else
+                {
+                    Debug.Log("钱不够");
+                    return;
+                }
+                                
                 //将防御塔放置在离防御塔最近的格子上
                 transform.position = nearestBase.GridObject.transform.position;
 
@@ -226,6 +237,7 @@ public class towerCommon : MonoBehaviour
                 isSettingTower = true;
                 currentGrid = nearestBase;
                 currentGrid.Tower = gameObject;
+
             }
 
             return;

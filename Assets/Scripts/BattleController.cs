@@ -1,107 +1,108 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-
-// 描述单个怪物的生成信息
-public struct EnemySpawnInfo
-{
-    public EnemyType enemyType; // 怪物类型
-    public int spawnPoint;     // 出生点编号
-    public float spawnDelay;   // 出生延迟时间
-}
-
-// 描述单波怪物的信息
-public struct WaveInfo 
-{
-    public List<EnemySpawnInfo> enemies;  // 该波次所有怪物的生成信息
-    public float waveDelay;               // 该波次开始前的延迟时间
-}
-
-// 关卡配置
-public class LevelConfig
-{
-    public int totalWaves;                // 总波数
-    public List<WaveInfo> waves;          // 每波的具体信息
-    public List<MapGrid> spawnPoints;
-    public LevelConfig()
-    {
-        waves = new List<WaveInfo>();
-    }
-}
+using TMPro;
 
 public class BattleController : MonoBehaviour
 {
-    public LevelConfig currentLevel;  // 当前关卡配置
-    private int currentWave = 0;       // 当前波次
-    private bool isWaveActive = false; // 当前波次是否正在进行
-    // Start is called before the first frame update
+    [SerializeField] public LevelData[] levelConfigs;
+    private LevelData currentLevel;
+    private int currentWave = 0;
+    private bool isWaveActive = false;
     public GameObject enemyPrefab;  // 敌人预制体
+    private int currentMoney;
+    private int currentHealth;
+    public TextMeshProUGUI moneyText;  // 添加对金钱UI的引用
+    public TextMeshProUGUI healthText; // 添加对生命值UI的引用
+    public TextMeshProUGUI healthTextCenter; // 添加对生命值UI的引用
+    private readonly object moneyLock = new object();
+    private readonly object healthLock = new object();
     public static BattleController Instance;
-
-
 
     void Awake()
     {
         Instance = this;
+        // 检查是否有存储的关卡索引
+        if (PlayerPrefs.HasKey("SelectedLevelIndex"))
+        {
+            int levelIndex = PlayerPrefs.GetInt("SelectedLevelIndex");
+            InitialLevelConfig(levelIndex);
+            // 用完后清除，避免下次加载场景时重复使用
+            PlayerPrefs.DeleteKey("SelectedLevelIndex");
+        }
+        else
+        {
+            //默认关卡
+            int levelIndex = 0;
+            InitialLevelConfig(levelIndex);
+        }
     }
 
     void Start()
     {
-        // 初始化关卡配置
-        currentLevel = InitialLevelConfig();
-
-        // 记录出怪点
-        MapMaker mapMaker = this.transform.GetComponent<MapMaker>();
-        if (mapMaker.gridObjects != null)
-        {
-            for(int i = 0; i < mapMaker.xColumn; i++)
-            {
-                for(int j = 0; j < mapMaker.yRow; j++)
-                {
-                    if(mapMaker.gridObjects[i, j].SpawnType == SpawnPointType.Right
-                        || mapMaker.gridObjects[i, j].SpawnType == SpawnPointType.Left
-                        || mapMaker.gridObjects[i, j].SpawnType == SpawnPointType.Top
-                        || mapMaker.gridObjects[i, j].SpawnType == SpawnPointType.Bottom)
-                    {  
-                        currentLevel.spawnPoints.Add(mapMaker.gridObjects[i, j]);
-                    }
-                }
-
-            }
-        }
-
+        // 移除任何硬编码的初始化
+        // 现在将由外部调用 InitialLevelConfig 来设置关卡
     }
 
-    public static LevelConfig InitialLevelConfig()
+    public void InitialLevelConfig(int levelIndex)
     {
-        LevelConfig config = new LevelConfig();
-        config.totalWaves = 3;
-        System.Random random = new System.Random();
-        config.spawnPoints = new List<MapGrid>();
-
-        for(int wave = 0; wave < config.totalWaves; wave++)
+        currentWave = 0;  // 重置波次
+        isWaveActive = false;  // 重置状态
+        
+        var config = System.Array.Find(levelConfigs, x => x.levelIndex == levelIndex);
+        if (config != null)
+        {   
+            currentLevel = config;
+            currentMoney = config.initialMoney;
+            currentHealth = config.initialHealth;
+            InitUI();
+        }
+        else
         {
-            WaveInfo waveInfo = new WaveInfo();
-            waveInfo.enemies = new List<EnemySpawnInfo>();
-            waveInfo.waveDelay = random.Next(3, 8); // 每波延迟3-8秒
-
-            for(int i = 0; i < 10; i++) // 每波10个敌人
-            {
-                EnemySpawnInfo enemyInfo = new EnemySpawnInfo();
-                enemyInfo.enemyType = (EnemyType)random.Next(0, 10); // 随机选择敌人类型
-                enemyInfo.spawnPoint = random.Next(0, 40); // 随机选择出生点(0-40)(6 * 2 + 14 * 2)
-                enemyInfo.spawnDelay = random.Next(1, 5); // 每个敌人延迟1-5秒出生
-                waveInfo.enemies.Add(enemyInfo);
-            }
-            config.waves.Add(waveInfo);
+            Debug.LogError($"未找到关卡 {levelIndex} 的配置");
         }
 
-        return config;
+        
     }
-    
+    private void InitUI()
+    {
+        moneyText.text = $"Money: {currentLevel.initialMoney}";
+        healthText.text = $"Health: {currentLevel.initialHealth}";
+        healthTextCenter.text = currentLevel.initialHealth.ToString();
+    }
+
+    public int GetMoney()
+    {
+        return currentMoney;
+    }
+
+    public void UpdateMoney(int money)
+    {
+        lock (moneyLock)
+        {
+            currentMoney += money;
+            moneyText.text = $"Money: {currentMoney}";
+        }
+    }
+
+    public void UpdateHealth(int health)
+    {
+        lock (healthLock)
+        {
+            currentHealth += health;
+            healthText.text = $"Health: {currentHealth}";
+            healthTextCenter.text = currentHealth.ToString();
+        }
+    }
+
     public void OnStartButtonClick()
     {
+        if (currentLevel == null)
+        {
+            Debug.LogError("请先初始化关卡配置！");
+            return;
+        }
+        
         Debug.Log("OnStartButtonClick");
         if (currentWave >= currentLevel.totalWaves)
         {
@@ -115,38 +116,40 @@ public class BattleController : MonoBehaviour
             return;
         }
 
-        // StartCoroutine(SpawnWave(currentWave));
+        StartCoroutine(SpawnWave(currentWave));
 
         //调试代码，只出1个怪
-        GameObject enemy = Instantiate(enemyPrefab, transform);
-        if (enemy != null)
-        {
-            enemy.transform.position = currentLevel.spawnPoints[0].GridObject.transform.position;
-        }
+        // GameObject enemy = Instantiate(enemyPrefab, transform);
+        // if (enemy != null)
+        // {
+        //     enemy.transform.position = currentLevel.spawnPoints[0].GridObject.transform.position;
+        // }
     }
 
     private IEnumerator SpawnWave(int waveIndex)
     {
         isWaveActive = true;
-        WaveInfo wave = currentLevel.waves[waveIndex];
+        LevelData.WaveData wave = currentLevel.waves[waveIndex];
 
         // 等待这波开始的延迟
         yield return new WaitForSeconds(wave.waveDelay);
 
-        foreach (EnemySpawnInfo enemyInfo in wave.enemies)
+        foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
         {
             // 在指定出生点生成敌人
             GameObject enemy = Instantiate(enemyPrefab, transform);
             if (enemy != null)
             {
-                enemy.transform.position = currentLevel.spawnPoints[enemyInfo.spawnPoint].GridObject.transform.position;
+                // 从mapMaker获取出生点
+                var spawnPoint = MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint];
+                enemy.transform.position = spawnPoint.GridObject.transform.position;
             }
 
             // 设置敌人类型
             EnemyCommon enemyComponent = enemy.GetComponent<EnemyCommon>();
             if (enemyComponent != null)
             {
-
+                
             }
 
             // 等待下一个敌人生成的延迟
