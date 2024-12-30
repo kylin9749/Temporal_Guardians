@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class towerCommon : MonoBehaviour
 {
@@ -19,13 +20,17 @@ public class towerCommon : MonoBehaviour
     private Transform attackRangeImage;     // 攻击范围图片的Transform组件引用
     private CircleCollider2D attackRangeCollider; // 攻击范围碰撞器的引用
     private float attackSpeedFactor = 1;    // 攻击速度因子
-    public GameObject shadow; //阴影
+    private float angle = 0;                // 防御塔朝向
+    public GameObject shadow;               //阴影
 
     // 防御塔技能组件
     protected TowerSkillCommon skillComponent;
 
     // 防御塔数据
     protected TowerData towerData;
+
+    // 添加提示管理器的引用
+    private UITipManager tipManager;
 
     public void InitializeTower(TowerData data)
     {
@@ -163,7 +168,7 @@ public class towerCommon : MonoBehaviour
             
             // 在防御塔位置生成子弹
             GameObject newBullet = Instantiate(towerData.bulletPrefab, transform.position, Quaternion.identity);
-            newBullet.transform.SetParent(transform);
+            newBullet.transform.SetParent(transform.parent);
 
             // 设置子弹追踪目标
             Bullet bulletScript = newBullet.GetComponent<Bullet>();
@@ -177,6 +182,7 @@ public class towerCommon : MonoBehaviour
             bulletScript.damage = towerData.damage;
             bulletScript.speed = towerData.bulletSpeed; // 子弹速度由防御塔定义
             bulletScript.SetMovementType(BulletMovementType.Straight);
+
         }
     }
 
@@ -190,6 +196,9 @@ public class towerCommon : MonoBehaviour
             scale.x = 0;
             mpBar.localScale = scale;
         }
+        
+        // 获取提示管理器的引用
+        tipManager = UITipManager.Instance;
     }
 
     public void Update()
@@ -204,7 +213,7 @@ public class towerCommon : MonoBehaviour
                 if (lastNearestBase != nearestBase)
                 {
                     // 将防御塔移动到最近的格子中心位置
-                    transform.position = nearestBase.GridObject.transform.position;
+                    transform.position = nearestBase.transform.position;
 
                     // 显示当前的攻击范围图片
                     attackRangeImage.gameObject.SetActive(true);
@@ -216,28 +225,39 @@ public class towerCommon : MonoBehaviour
             // 如果鼠标左键点击，则设置塔
             if (Input.GetMouseButtonDown(0))
             {
-                // 扣除建造费用
                 if (BattleController.Instance.GetMoney() >= towerData.cost)
                 {
-                    BattleController.Instance.UpdateMoney(-towerData.cost);
+                    //如果该格子上已经放置了其他塔，则不放置
+                    if (nearestBase.Tower != null)
+                    {
+                        // 将Debug.Log改为UI提示
+                        if (tipManager != null)
+                        {
+                            tipManager.ShowTip("该位置已有防御塔，无法放置");
+                        }
+                        return;
+                    }
+                    
+                    //将防御塔放置在离防御塔最近的格子上
+                    transform.position = nearestBase.transform.position;
+
+                    //隐藏攻击范围图片
+                    attackRangeImage.gameObject.SetActive(false);
+
+                    // 设置塔为已放置
+                    isSettingTower = true;
+                    currentGrid = nearestBase;
+                    currentGrid.Tower = gameObject;
+
                 }
                 else
                 {
-                    Debug.Log("钱不够");
+                    if (tipManager != null)
+                    {
+                        tipManager.ShowTip("金币不足，无法建造");
+                    }
                     return;
                 }
-                                
-                //将防御塔放置在离防御塔最近的格子上
-                transform.position = nearestBase.GridObject.transform.position;
-
-                //隐藏攻击范围图片
-                attackRangeImage.gameObject.SetActive(false);
-
-                // 设置塔为已放置
-                isSettingTower = true;
-                currentGrid = nearestBase;
-                currentGrid.Tower = gameObject;
-
             }
 
             return;
@@ -254,16 +274,16 @@ public class towerCommon : MonoBehaviour
             nextAttackTime = Time.time + (1f / (towerData.attackSpeed * attackSpeedFactor));
         }
 
-        // 如果有当前目标，让防御塔朝向目标
-        // if (CurrentTarget != null)
-        // {
-        //     // 计算目标方向
-        //     Vector3 direction = CurrentTarget.transform.position - transform.position;
-        //     // 计算旋转角度(忽略z轴)
-        //     float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        //     // 应用旋转
-        //     transform.rotation = Quaternion.Euler(0, 0, angle);
-        // }
+        //如果有当前目标，让防御塔朝向目标
+        if (CurrentTarget != null)
+        {
+            // 计算目标方向
+            Vector3 direction = CurrentTarget.transform.position - transform.position;
+            // 计算旋转角度
+            angle = -(Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg);
+            // 应用旋转
+            transform.rotation = Quaternion.Euler(0, 0, angle);
+        }
     }
 
     public void DisableTower()
@@ -347,5 +367,11 @@ public class towerCommon : MonoBehaviour
     {
         get { return attackSpeedFactor; }
         set { attackSpeedFactor = value; }
+    }
+
+    public float Angle
+    {
+        get { return angle; }
+        set { angle = value; }
     }
 }

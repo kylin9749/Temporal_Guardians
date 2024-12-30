@@ -16,7 +16,7 @@ public class BoomSkill : TowerSkillCommon
             bomb.transform.SetParent(target.transform);
             bomb.transform.localPosition = Vector3.zero;  // 相对于父物体的位置设为原点
 
-            // 添加爆炸组件（替换原来的BombFollower）
+            // 添加爆炸组件
             BombEffect bombEffect = bomb.AddComponent<BombEffect>();
             bombEffect.damage = tower.TowerData.skillDamage;
             bombEffect.explosionRange = tower.TowerData.skillRange;

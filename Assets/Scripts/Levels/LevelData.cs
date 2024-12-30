@@ -1,14 +1,19 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+public enum LevelType
+{
+    MechaClock,
+    DigitalClock
+}
+
 [CreateAssetMenu(fileName = "NewLevelData", menuName = "Tower Defense/Level Data")]
 public class LevelData : ScriptableObject
 {
-    public int levelIndex;                // 关卡编号
     public string levelName;              // 关卡名称
     public int initialMoney;              // 玩家初始金钱
     public int initialHealth;             // 玩家初始血量
-    public int totalWaves;                // 总波数
+    public LevelType levelType;           // 关卡类型
 
     [System.Serializable]
     public class WaveData

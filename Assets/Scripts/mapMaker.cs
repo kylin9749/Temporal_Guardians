@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,15 +22,11 @@ public class MapMaker : MonoBehaviour
     //列数
     public int xColumn = 29;
     //防御塔基台
-    public GameObject towerBase;
-    //道路
-    public GameObject roadBase;
-    //中心点
-    public GameObject centerBase;
+    public GameObject gridBase;
     //格子对象数组
     public MapGrid[,] gridObjects;
     //中心格子
-    public MapGrid centerGrid;
+    private MapGrid centerGrid;
     //出怪点
     public List<MapGrid> spawnPoints;
     public static MapMaker Instance;
@@ -91,103 +88,72 @@ public class MapMaker : MonoBehaviour
         //创建格子对象数组
         gridObjects = new MapGrid[xColumn, yRow];
         spawnPoints = new List<MapGrid>();
-        //初始化格子对象数组
-        for (int x = 0; x < xColumn; x++)
-        {
-            for (int y = 0; y < yRow; y++)
-            {
-                gridObjects[x,y] = new MapGrid(x, y);
-            }
-        }
-
-        //初始化所有格子为Base类型
-        for (int x = 0; x < xColumn; x++)
-        {
-            for (int y = 0; y < yRow; y++)
-            {
-                gridObjects[x,y].Type = GridType.Base;
-            }
-        }
-
-        //设置6条横向道路
-        for (int x = 0; x < xColumn; x++)
-        {
-            gridObjects[x,1].Type = GridType.Road;
-            gridObjects[x,3].Type = GridType.Road;
-            gridObjects[x,5].Type = GridType.Road;
-            gridObjects[x,7].Type = GridType.Road;
-            gridObjects[x,9].Type = GridType.Road;
-            gridObjects[x,11].Type = GridType.Road;
-        }
-
-        //设置14条纵向道路
-        for (int y = 0; y < yRow; y++)
-        {
-            gridObjects[1,y].Type = GridType.Road;  
-            gridObjects[3,y].Type = GridType.Road;
-            gridObjects[5,y].Type = GridType.Road;
-            gridObjects[7,y].Type = GridType.Road;
-            gridObjects[9,y].Type = GridType.Road;
-            gridObjects[11,y].Type = GridType.Road;
-            gridObjects[13,y].Type = GridType.Road;
-            gridObjects[15,y].Type = GridType.Road;
-            gridObjects[17,y].Type = GridType.Road;
-            gridObjects[19,y].Type = GridType.Road;
-            gridObjects[21,y].Type = GridType.Road;
-            gridObjects[23,y].Type = GridType.Road;
-            gridObjects[25,y].Type = GridType.Road;
-            gridObjects[27,y].Type = GridType.Road;
-        }
-
-        //设置中心点
-        gridObjects[14,6].Type = GridType.Center;
-        CenterGrid = gridObjects[14,6];
-
-        //设置道路的边界是出怪格，对于纵向道路，怪物从上下方出来，对于横向道路，怪物从左右方出来
-        //横向道路的左右边界
-        for(int i = 1; i < yRow; i+=2)
-        {  
-            if(i == 1 || i == 3 || i == 5 || i == 7 || i == 9 || i == 11)
-            {
-                gridObjects[0,i].SpawnType = SpawnPointType.Left;  //左边界
-                gridObjects[xColumn-1,i].SpawnType = SpawnPointType.Right;  //右边界
-                spawnPoints.Add(gridObjects[0,i]);
-                spawnPoints.Add(gridObjects[xColumn-1,i]);
-            }
-        }
-        //纵向道路的上下边界
-        for(int i = 1; i < xColumn; i+=2)
-        {
-            if(i == 1 || i == 3 || i == 5 || i == 7 || i == 9 || i == 11 || i == 13 || i == 15 || i == 17 || i == 19 || i == 21 || i == 23 || i == 25 || i == 27)
-            {
-                gridObjects[i,0].SpawnType = SpawnPointType.Bottom;  //下边界
-                gridObjects[i,yRow-1].SpawnType = SpawnPointType.Top;  //上边界
-                spawnPoints.Add(gridObjects[i,0]);
-                spawnPoints.Add(gridObjects[i,yRow-1]);
-            }
-        }
 
         //生成格子
         for (int x = 0; x < xColumn; x++)
         {
             for (int y = 0; y < yRow; y++)
             {
+                GridType type = GetGridType(x, y);
                 //根据格子类型生成不同的预制件
-                GameObject itemGo;
-                if(gridObjects[x,y].Type == GridType.Base)
+                GameObject itemGo = Instantiate(gridBase, transform.position, transform.rotation);
+                MapGrid gridObject = itemGo.GetComponent<MapGrid>();
+                gridObject.Type = type;
+                gridObject.X = x;
+                gridObject.Y = y;
+
+                if(isRoadType(type))
                 {
-                    itemGo = Instantiate(towerBase, transform.position, transform.rotation);
+                    if (type == GridType.RoadHorizontal)
+                    {
+                        if(x == 0)
+                        {
+                            gridObject.SpawnType = SpawnPointType.Left;
+                            spawnPoints.Add(gridObject);
+                        }
+                        else if(x == xColumn - 1)
+                        {
+                            gridObject.SpawnType = SpawnPointType.Right;
+                            spawnPoints.Add(gridObject);
+                        }
+                        gridObject.HorizontalRoadImage.SetActive(true);
+                    }
+                    else if (type == GridType.RoadVertical)
+                    {
+                        if(y == 0)
+                        {
+                            gridObject.SpawnType = SpawnPointType.Bottom;
+                            spawnPoints.Add(gridObject);
+                        }
+                        else if(y == yRow - 1)
+                        {
+                            gridObject.SpawnType = SpawnPointType.Top;
+                            spawnPoints.Add(gridObject);
+                        }
+                        gridObject.VerticalRoadImage.SetActive(true);
+                    }
+                    else if (type == GridType.Cross)
+                    {
+                        gridObject.CrossRoadImage.SetActive(true);
+                    }
                 }
-                else if(gridObjects[x,y].Type == GridType.Center)
+                else if(type == GridType.Center)
                 {
-                    itemGo = Instantiate(centerBase, transform.position, transform.rotation);
+                    CenterGrid = itemGo.GetComponent<MapGrid>();
+                    gridObject.Type = GridType.Center;
+                    gridObject.CenterImage.SetActive(true);
+                    //将当前对象的Sprite的显示等级设置为5
+                    gridObject.CenterImage.GetComponent<SpriteRenderer>().sortingOrder = 5;
                 }
                 else
                 {
-                    itemGo = Instantiate(roadBase, transform.position, transform.rotation);
+                    gridObject.Type = GridType.Base;
+                    gridObject.BaseImage.SetActive(true);
                 }
-                //设置属性
-                gridObjects[x,y].GridObject = itemGo;
+                //设置gridObjects属性
+                gridObjects[x, y] = gridObject;
+                // Debug.Log("gridObject.position = " + gridObject.X + "," + gridObject.Y);
+
                 itemGo.transform.localScale = new Vector3(gridWidth, gridHeight, 1);
                 itemGo.transform.position = CorretPositon(x * gridWidth, y * gridHeight);
                 itemGo.transform.SetParent(transform);
@@ -195,8 +161,46 @@ public class MapMaker : MonoBehaviour
         }
 
         //设置地图原点
-        mapOrigin = new Vector3(gridObjects[0,0].GridObject.transform.position.x,
-                                gridObjects[0,0].GridObject.transform.position.y, 0);
+        mapOrigin = new Vector3(gridObjects[0,0].transform.position.x,
+                                gridObjects[0,0].transform.position.y, 0);
+    }
+
+    //判断是否是道路
+    public bool isRoadType(GridType type)
+    {
+        return type == GridType.RoadVertical || type == GridType.RoadHorizontal || type == GridType.Cross;
+    }
+
+    //获取格子类型
+    public GridType GetGridType(int x, int y)
+    {
+        if (y == 1 || y == 3 || y == 5 || y == 7 || y == 9 || y == 11)
+        {
+            // 直接检查x是否为垂直道路的条件
+            if (x == 1 || x == 3 || x == 5 || x == 7 || x == 9 || x == 11 || x == 13 || x == 15
+                    || x == 17 || x == 19 || x == 21 || x == 23 || x == 25 || x == 27)
+            {
+                return GridType.Cross;
+            }
+        }
+
+        if (x == 1 || x == 3 || x == 5 || x == 7 || x == 9 || x == 11 || x == 13 || x == 15
+                || x == 17 || x == 19 || x == 21 || x == 23 || x == 25 || x == 27)
+        {
+            return GridType.RoadVertical;
+        }
+        else if (y == 1 || y == 3 || y == 5 || y == 7 || y == 9 || y == 11)
+        {
+            return GridType.RoadHorizontal;
+        }
+        else if (x == 14 && y == 6)
+        {
+            return GridType.Center;
+        }
+        else
+        {
+            return GridType.Base;
+        }
     }
 
     //纠正预制件的起始位置
@@ -277,7 +281,7 @@ public class MapMaker : MonoBehaviour
                 if (gridObjects[x, y].Type == GridType.Base)
                 {
                     // 获取当前格子的世界坐标
-                    Vector3 gridPosition = gridObjects[x, y].GridObject.transform.position;
+                    Vector3 gridPosition = gridObjects[x, y].transform.position;
                     
                     // 计算与防御塔的距离
                     float distance = Vector3.Distance(position, gridPosition);

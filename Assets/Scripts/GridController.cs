@@ -5,7 +5,9 @@ using UnityEngine;
 public enum GridType
 {
     Base,   // 防御塔基台
-    Road,   // 道路
+    RoadVertical,   // 纵向道路
+    RoadHorizontal,  // 横向道路
+    Cross,  // 十字路口
     Center  // 中心点
 }
 
@@ -19,7 +21,7 @@ public enum SpawnPointType
 }
 
 
-public class MapGrid
+public class MapGrid : MonoBehaviour
 {
     // 格子类型
     public GridType Type { get; set; }
@@ -36,34 +38,19 @@ public class MapGrid
 
     // 是否已放置防御塔
     public GameObject Tower { get; set; }
-    // 当前格子对应的场景物体
-    public GameObject GridObject { get; set; }
 
-    // 构造函数
-    public MapGrid(int x, int y, GridType type = GridType.Base)
+    // 是否被阻挡
+    public bool IsBlocked { get; set; }
+
+    public GameObject BaseImage;
+    public GameObject CenterImage;
+    public GameObject VerticalRoadImage;
+    public GameObject HorizontalRoadImage;
+    public GameObject CrossRoadImage;
+    public GameObject DigitalClockShandow;
+
+    public MapGrid GetGridFromVector2Int(Vector2Int tile)
     {
-        X = x;
-        Y = y;
-        Type = type;
-        
-        // 根据格子类型初始化属性
-        switch(type)
-        {
-            case GridType.Base:
-                IsWalkable = false;
-                SpawnType = SpawnPointType.None;
-                Tower = null;
-                break;
-            case GridType.Road:
-                IsWalkable = true; 
-                SpawnType = SpawnPointType.None;
-                Tower = null;
-                break;
-            case GridType.Center:
-                IsWalkable = false;
-                SpawnType = SpawnPointType.None;
-                Tower = null;
-                break;
-        }
+        return MapMaker.Instance.gridObjects[X + tile.x, Y + tile.y];
     }
 }

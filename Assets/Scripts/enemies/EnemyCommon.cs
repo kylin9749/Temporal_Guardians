@@ -118,7 +118,7 @@ public class EnemyCommon : MonoBehaviour
         if (nextGrid != null)
         {
             // 获取目标位置
-            Vector3 targetPosition = nextGrid.GridObject.transform.position;
+            Vector3 targetPosition = nextGrid.transform.position;
             
             // 计算移动方向
             Vector3 moveDirection = (targetPosition - transform.position).normalized;
@@ -134,6 +134,8 @@ public class EnemyCommon : MonoBehaviour
     {
         currentGrid = GetCurrentGridByPosition();
         if(currentGrid == null) return null;
+        // Debug.Log("currentGrid.type = " + currentGrid.Type);
+        // Debug.Log("currentGrid.position = " + currentGrid.X + "," + currentGrid.Y);
 
         // 如果怪物已经走到中心点，则销毁当前怪物并触发掉血逻辑
         if(currentGrid.Type == GridType.Center)
@@ -146,7 +148,7 @@ public class EnemyCommon : MonoBehaviour
         // 如果怪物没走到currentGrid，的中间，则维持原方向继续走，暂时不选新路径
         if(nextGrid != null)
         {
-            if (Vector3.Distance(transform.position, currentGrid.GridObject.transform.position) > 0.1f)
+            if (Vector3.Distance(transform.position, currentGrid.transform.position) > 0.1f)
             {
                 return nextGrid;
             }
@@ -155,14 +157,23 @@ public class EnemyCommon : MonoBehaviour
         List<MapGrid> validNeighbors = new List<MapGrid>();
         foreach (MapGrid neighbor in GetNeighborGrids(currentGrid))
         {
-            if (neighbor.Type == GridType.Road || neighbor.Type == GridType.Center)
+            if (MapMaker.Instance.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center)
             {
                 validNeighbors.Add(neighbor);
             }
         }
 
-        if(validNeighbors.Count == 0) return null;
-
+        if(validNeighbors.Count == 0)
+        {
+            Debug.LogError("validNeighbors.Count = " + validNeighbors.Count);
+            return null;
+        }
+        // Debug.Log("validNeighbors.Count = " + validNeighbors.Count);
+        // foreach(MapGrid grid in validNeighbors)
+        // {
+        //     Debug.Log("neighbor.type = " + grid.Type);
+        //     Debug.Log("neighbor.position = " + grid.X + "," + grid.Y);
+        // }
         // 找到距离中心最近的邻居格子
         List<MapGrid> bestGrids = new List<MapGrid>();
         int minDistance = int.MaxValue;
@@ -183,7 +194,7 @@ public class EnemyCommon : MonoBehaviour
                 bestGrids.Add(neighbor);
             }
         }
-
+        // Debug.Log("bestGrids.Count = " + bestGrids.Count);
         // 默认情况下只有1个最佳选择
         nextGrid = bestGrids[0];
 
@@ -225,9 +236,12 @@ public class EnemyCommon : MonoBehaviour
         float gridHeight = MapMaker.Instance.GridHeight;
         
         // 先用除法得到大致范围
+        // Debug.Log("currentPos = " + currentPos.x + "," + currentPos.y);
+        // Debug.Log("mapOrigin = " + mapOrigin.x + "," + mapOrigin.y);
+        // Debug.Log("gridWidth = " + gridWidth + ", gridHeight = " + gridHeight);
         int baseX = Mathf.FloorToInt((currentPos.x - mapOrigin.x) / gridWidth);
         int baseY = Mathf.FloorToInt((currentPos.y - mapOrigin.y) / gridHeight);
-        
+        // Debug.Log("baseX = " + baseX + ", baseY = " + baseY);
         // 检查周围3x3范围内的格子
         float minDistance = float.MaxValue;
         MapGrid closestGrid = null;
@@ -244,7 +258,10 @@ public class EnemyCommon : MonoBehaviour
                     checkY >= 0 && checkY < MapMaker.Instance.YRow)
                 {
                     MapGrid grid = MapMaker.Instance.GridObjects[checkX, checkY];
-                    Vector3 gridCenter = grid.GridObject.transform.position;
+                    // Debug.Log("checkX = " + checkX + ", checkY = " + checkY);
+                    // Debug.Log("grid.position = " + grid.X + "," + grid.Y);
+                    Vector3 gridCenter = grid.transform.position;
+
                     float distance = Vector3.Distance(currentPos, gridCenter);
                     
                     if (distance < minDistance)
@@ -286,7 +303,7 @@ public class EnemyCommon : MonoBehaviour
             foreach (MapGrid neighbor in GetNeighborGrids(current))
             {
                 // 只考虑可行走的格子（Road或Center类型）
-                if ((neighbor.Type == GridType.Road || neighbor.Type == GridType.Center) 
+                if ((MapMaker.Instance.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center) 
                     && !distances.ContainsKey(neighbor))
                 {
                     queue.Enqueue(neighbor);
@@ -316,6 +333,7 @@ public class EnemyCommon : MonoBehaviour
             if (newX >= 0 && newX < MapMaker.Instance.XColumn &&
                 newY >= 0 && newY < MapMaker.Instance.YRow)
             {
+                // Debug.Log("newX = " + newX + ", newY = " + newY);
                 neighbors.Add(MapMaker.Instance.GridObjects[newX, newY]);
             }
         }

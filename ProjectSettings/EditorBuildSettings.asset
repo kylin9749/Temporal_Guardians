@@ -9,8 +9,20 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
+    path: Assets/Scenes/MainScene.unity
+    guid: 5ba5f2a28cce2ab4c95b9677062050be
+  - enabled: 1
+    path: Assets/Scenes/ChapterScene.unity
+    guid: a4b597b2e0806c441a5621e0766f8f7d
+  - enabled: 1
+    path: Assets/Scenes/LevelScene.unity
+    guid: 609abd750e6e07e4f9cd4141e17640ba
+  - enabled: 1
     path: Assets/Scenes/BattleScene.unity
     guid: 3fc8acdd13e6c734bafef6554d6fdbcd
+  - enabled: 0
+    path: Assets/Scenes/MainMenu.unity
+    guid: b775682d40a92f5469465d933fb9db1d
   m_configObjects:
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: b1b56c4c947608148a39ac98a8343e45, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 36b9f957362fcbd4f8f207bef838a1f0, type: 2}
