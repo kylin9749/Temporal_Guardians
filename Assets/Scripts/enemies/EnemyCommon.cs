@@ -10,6 +10,7 @@ public class EnemyCommon : MonoBehaviour
     private bool isEnraged = false;           // 是否狂暴
     public bool isSkilling = false;          // 是否正在释放技能
     public Transform healthBar = null;
+    public GameObject imageObject = null;
     private int stopCount = 0;
     private object lockObj = new object();
     private MapGrid currentGrid = null;       // 当前格子
@@ -41,6 +42,7 @@ public class EnemyCommon : MonoBehaviour
             if (skillComponent == null)
             {
                 Debug.LogError($"Failed to add skill component of type {skillType}");
+                return;
             }
         }
         else
@@ -49,7 +51,7 @@ public class EnemyCommon : MonoBehaviour
         }
 
         // 设置敌人的图片
-        GetComponent<SpriteRenderer>().sprite = data.enemySprite;
+        imageObject.GetComponent<SpriteRenderer>().sprite = data.enemySprite;
 
     }
     private System.Type GetSkillType(EnemyType enemyType)
@@ -60,9 +62,10 @@ public class EnemyCommon : MonoBehaviour
                 return typeof(HideInDarkSkill);
             case EnemyType.Mutant:
                 return typeof(HideInDarkSkill);
-            // ... 其他情况
+            case EnemyType.Annihilator:
+                return typeof(HideInDarkSkill);
             default:
-                return null;
+                return typeof(EmptySkill);
         }
     }
 
@@ -124,7 +127,7 @@ public class EnemyCommon : MonoBehaviour
             Vector3 moveDirection = (targetPosition - transform.position).normalized;
             
             // 以当前速度移动
-            transform.position += moveDirection * currentMoveSpeed * Time.deltaTime;
+            transform.position += moveDirection * (currentMoveSpeed / 2) * Time.deltaTime;
         }
 
     }
@@ -363,6 +366,7 @@ public class EnemyCommon : MonoBehaviour
             //玩家获胜，增加金币
             BattleController.Instance.UpdateMoney(enemyData.coinsDrop);
         }
+        BattleController.Instance.UpdateEnemyNumber(-1);
         Destroy(gameObject);
     }
 

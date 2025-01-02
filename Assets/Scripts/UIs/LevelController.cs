@@ -25,6 +25,7 @@ public class LevelController : MonoBehaviour
     {
         // 保存当前关卡编号
         PlayerPrefs.SetString("CurrentLevel", selectedChapter.ToString() + "_" + level.ToString());
+        PlayerPrefs.SetInt("SelectedChapter", selectedChapter);
         PlayerPrefs.Save();
         // 加载游戏场景
         SceneManager.LoadScene("BattleScene");

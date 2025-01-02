@@ -48,6 +48,7 @@ public class MapGrid : MonoBehaviour
     public GameObject HorizontalRoadImage;
     public GameObject CrossRoadImage;
     public GameObject DigitalClockShandow;
+    public GameObject NextSpawnPoint;
 
     public MapGrid GetGridFromVector2Int(Vector2Int tile)
     {

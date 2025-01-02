@@ -14,14 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   towerName: BoomTower
   towerType: 1
-  bulletSpeed: 1
+  bulletSpeed: 2
   skillCastTime: 2
-  damage: 50
+  damage: 4
   attackSpeed: 1
-  totalMp: 30
+  totalMp: 100
   towerSprite: {fileID: 21300000, guid: 01275eac7c45bf644a999cac0b8d3d52, type: 3}
   bulletPrefab: {fileID: 1285418151523038609, guid: 8250322fa3b35c84980a702a8ff5f8fb, type: 3}
+  attackRange: 5
+  cost: 50
   skillType: 1
+  skillDamage: 20
   skillRange: 5
-  skillDuration: 2
-  skillDamage: 100

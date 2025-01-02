@@ -66,7 +66,7 @@ public class SleepSkill : TowerSkillCommon
         BeginSkill(affectedEnemies);
 
         // 等待3秒
-        yield return new WaitForSeconds(tower.TowerData.skillDuration);
+        yield return new WaitForSeconds(tower.TowerData.skillCastTime);
 
         EndSkill(affectedEnemies);
     }

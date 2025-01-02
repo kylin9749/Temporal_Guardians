@@ -222,6 +222,13 @@ public class towerCommon : MonoBehaviour
                 }
             }
 
+            // 如果鼠标右键点击，则取消塔
+            if (Input.GetMouseButtonDown(1))
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             // 如果鼠标左键点击，则设置塔
             if (Input.GetMouseButtonDown(0))
             {
@@ -248,6 +255,8 @@ public class towerCommon : MonoBehaviour
                     isSettingTower = true;
                     currentGrid = nearestBase;
                     currentGrid.Tower = gameObject;
+
+                    BattleController.Instance.UpdateMoney(-towerData.cost);
 
                 }
                 else

@@ -16,6 +16,7 @@ public class MechaClockControl : MonoBehaviour
     // 添加更新间隔控制
     private float updateInterval = 0.1f; // 每0.1秒更新一次
     private float nextUpdateTime = 0f;
+    private bool isClockActive = false;
 
     // 添加新的变量来存储重叠的防御塔
     private List<towerCommon> overlappingTowers = new List<towerCommon>();
@@ -23,7 +24,6 @@ public class MechaClockControl : MonoBehaviour
     void Start()
     {
         timeOffset = Time.time;
-        Debug.Log($"timeOffset: {timeOffset}");
         
         // 如果没有指定表盘中心，就使用当前物体的位置作为中心
         if (clockCenter == null)
@@ -53,7 +53,6 @@ public class MechaClockControl : MonoBehaviour
     // 添加碰撞检测方法
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("OnTriggerEnter2D tag=" + other.gameObject.tag);
         if (other.gameObject.CompareTag("towers"))
         {
             towerCommon tower = other.GetComponent<towerCommon>();
@@ -67,7 +66,6 @@ public class MechaClockControl : MonoBehaviour
     
     private void OnTriggerExit2D(Collider2D other)
     {
-        Debug.Log("OnTriggerExit2D tag=" + other.gameObject.tag);
         if (other.gameObject.CompareTag("towers"))
         {
             towerCommon tower = other.GetComponent<towerCommon>();
@@ -96,9 +94,20 @@ public class MechaClockControl : MonoBehaviour
                Physics2D.IsTouching(towerCollider, minuteCollider);
     }
 
+    public void SetClockActive(bool active)
+    {
+        isClockActive = active;
+    }
+
+    public void SetClockTime(float time)
+    {
+        timeOffset = Time.time - time;
+    }
+
     // Update is called once per frame
     void Update()
     {
+        // if (!isClockActive) return;
         // 检查是否需要更新
         if (Time.time >= nextUpdateTime)
         {

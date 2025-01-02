@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   towerName: SleepTower
   towerType: 0
-  bulletSpeed: 1
+  bulletSpeed: 3
   skillCastTime: 3
-  damage: 10
+  damage: 5
   attackSpeed: 2
   totalMp: 100
   towerSprite: {fileID: 21300000, guid: c784fd4744f39724c85b821c7dcc0b3f, type: 3}
   bulletPrefab: {fileID: 1285418151523038609, guid: 8250322fa3b35c84980a702a8ff5f8fb, type: 3}
   attackRange: 5
+  cost: 50
   skillType: 0
-  skillRange: 5
-  skillDuration: 3
   skillDamage: 50
+  skillRange: 5

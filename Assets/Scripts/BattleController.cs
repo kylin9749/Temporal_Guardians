@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class BattleController : MonoBehaviour
 {
@@ -9,19 +10,23 @@ public class BattleController : MonoBehaviour
     private LevelData currentLevelData;
     private int currentWave = 0;
     private bool isWaveActive = false;
-    public GameObject enemyPrefab;  // 敌人预制体
+    private bool isEndGame = false;
     private int currentMoney;
     private int currentHealth;
+    private readonly object moneyLock = new object();
+    private readonly object healthLock = new object();
+    private readonly object enemyNumberLock = new object();
+    public static BattleController Instance;
+    private string currentLevel;
+    private int enemyNumber = 0;
+
+    public GameObject endGameUI;
+    public TextMeshProUGUI endGameUIString;
+    public GameObject MechaClockLevel;
+    public GameObject DigitalClockLevel;
     public TextMeshProUGUI moneyText;  // 添加对金钱UI的引用
     public TextMeshProUGUI healthText; // 添加对生命值UI的引用
     public TextMeshProUGUI healthTextCenter; // 添加对生命值UI的引用
-    private readonly object moneyLock = new object();
-    private readonly object healthLock = new object();
-    public static BattleController Instance;
-    private string currentLevel;
-    public GameObject MechaClockLevel;
-    public GameObject DigitalClockLevel;
-
     void Awake()
     {
         Instance = this;
@@ -30,6 +35,7 @@ public class BattleController : MonoBehaviour
         {
             currentLevel = PlayerPrefs.GetString("CurrentLevel");
             InitialLevelConfig(currentLevel);
+            
             // 用完后清除，避免下次加载场景时重复使用
             PlayerPrefs.DeleteKey("CurrentLevel");
         }
@@ -70,7 +76,9 @@ public class BattleController : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"未找到关卡 {levelIndex} 的配置");
+            DebugLevelControl.Log($"未找到关卡 {levelIndex} 的配置", 
+                DebugLevelControl.DebugModule.BattleController, 
+                DebugLevelControl.LogLevel.Error);
         }
 
         
@@ -96,6 +104,14 @@ public class BattleController : MonoBehaviour
         }
     }
 
+    public void UpdateEnemyNumber(int number)
+    {
+        lock (enemyNumberLock)
+        {
+            enemyNumber += number;
+        }
+    }
+    
     public void UpdateHealth(int health)
     {
         lock (healthLock)
@@ -158,6 +174,16 @@ public class BattleController : MonoBehaviour
             // 在指定出生点生成敌人
             GameObject enemy = EnemyFactory.Instance.CreateEnemy(enemyInfo.enemyType,
                 MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].transform.position);
+            
+            if (MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint != null)
+            {
+                MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint.SetActive(false);
+            }
+            
+            if (enemy != null)
+            {
+                enemyNumber++;
+            }
         }
 
         isWaveActive = false;
@@ -167,7 +193,34 @@ public class BattleController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (isEndGame) return;
+
+        if (currentWave < currentLevelData.waves.Count)
+        {
+            //显示下一波敌人的出生点
+            LevelData.WaveData wave = currentLevelData.waves[currentWave];
+            foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
+            {
+                if (MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint != null)
+                {
+                    MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint.SetActive(true);
+                }
+            }
+        }
+
+        if (currentHealth <= 0)
+        {
+            endGameUI.SetActive(true);
+            endGameUIString.text = "Game Over";
+            isEndGame = true;
+
+        }
+        else if (currentWave >= currentLevelData.waves.Count && enemyNumber <= 0)
+        {
+            endGameUI.SetActive(true);
+            endGameUIString.text = "Game Win";
+            isEndGame = true;
+        }
     }
 
     private void createTower(TowerType towerType)
@@ -208,27 +261,11 @@ public class BattleController : MonoBehaviour
     public void createTower7()
     {
         // createTower(TowerType.Tower7);
-
-        //临时调试，让防御塔出现
-        GameObject tower = GameObject.FindGameObjectWithTag("towers");
-        if (tower != null)
-        {
-            tower.GetComponent<towerCommon>().EnableTower();
-        }
     }
 
     public void createTower8()
     {
         // createTower(TowerType.Tower8);
-
-        //临时调试，让防御塔消失
-        GameObject tower = GameObject.FindGameObjectWithTag("towers");
-        if (tower != null)
-        {
-            tower.GetComponent<towerCommon>().DisableTower();
-        }
-
-
     }
 
     private Vector3 GetMousePosition()
@@ -238,5 +275,10 @@ public class BattleController : MonoBehaviour
         // 将屏幕坐标转换为世界坐标
         mousePos.z = Camera.main.transform.position.y;
         return Camera.main.ScreenToWorldPoint(mousePos);
+    }
+
+    public void OnClickReturnToLevelSelect()
+    {
+        SceneManager.LoadScene("LevelScene");
     }
 }

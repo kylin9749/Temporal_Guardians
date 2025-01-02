@@ -7,7 +7,7 @@ public enum EnemyType
 {
     Stalker,        // 潜行者
     Mutant,         // 变异者
-    Pathmaker,      // 造路者  
+    //Pathmaker,      // 造路者  
     Annihilator,    // 抹杀者
     FrostMage,      // 冰霜法师
     GuardMage,      // 护卫法师
