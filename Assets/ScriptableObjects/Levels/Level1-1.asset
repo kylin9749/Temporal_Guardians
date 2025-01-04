@@ -16,6 +16,7 @@ MonoBehaviour:
   initialMoney: 500
   initialHealth: 10
   levelType: 0
+  startTimeHour: 2
   waves:
   - waveDelay: 0
     enemies:
@@ -130,3 +131,211 @@ MonoBehaviour:
     - enemyType: 2
       spawnDelay: 1
       spawnPoint: 39
+  - waveDelay: 0
+    enemies:
+    - enemyType: 2
+      spawnDelay: 0
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+  - waveDelay: 0
+    enemies:
+    - enemyType: 2
+      spawnDelay: 0
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+  - waveDelay: 0
+    enemies:
+    - enemyType: 2
+      spawnDelay: 0
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+  - waveDelay: 0
+    enemies:
+    - enemyType: 2
+      spawnDelay: 0
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+  - waveDelay: 0
+    enemies:
+    - enemyType: 2
+      spawnDelay: 0
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 39
+  - waveDelay: 0
+    enemies:
+    - enemyType: 1
+      spawnDelay: 0
+      spawnPoint: 15
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 15
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 15
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 15
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 15
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 15
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 15
+    - enemyType: 1
+      spawnDelay: 15
+      spawnPoint: 39
+  - waveDelay: 0
+    enemies:
+    - enemyType: 2
+      spawnDelay: 0
+      spawnPoint: 24
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 24
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 24
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 24
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 24
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 24
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 24
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 24
+  - waveDelay: 0
+    enemies:
+    - enemyType: 2
+      spawnDelay: 0
+      spawnPoint: 30
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 30
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 30
+    - enemyType: 1
+      spawnDelay: 1
+      spawnPoint: 30
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 30
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 30
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 30
+    - enemyType: 2
+      spawnDelay: 1
+      spawnPoint: 30

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class DigitalClockControl : MonoBehaviour
 {
-    public System.DateTime startTime = new System.DateTime(2024, 1, 1, 0, 0, 0);
+    private System.DateTime startTime = new System.DateTime(2024, 1, 1, 0, 0, 0);
     // 数字显示区域的定义
     private readonly int[,] digitPositions = new int[4,2] {
         {2, 2},   // 小时十位
@@ -97,6 +97,8 @@ public class DigitalClockControl : MonoBehaviour
         },
     };
 
+    private bool isClockActive = false;
+
     private int[] currentDigits = new int[4]; // 当前显示的数字
     private Dictionary<Vector2Int, List<GameObject>> digitTowers; // 记录每个位置的防御塔
 
@@ -111,6 +113,23 @@ public class DigitalClockControl : MonoBehaviour
         MapMaker.Instance.GridObjects[14, 8].transform.Find("DigitalClockShandow").gameObject.SetActive(true);
     }
 
+    public void SetClockTime(float timeInSeconds)
+    {
+        // 将秒数转换为TimeSpan
+        System.TimeSpan timeSpan = System.TimeSpan.FromSeconds(timeInSeconds);
+        
+        // 更新startTime为基准时间加上传入的时间
+        startTime = new System.DateTime(2024, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0);
+        
+        // 立即更新显示
+        UpdateDisplay(startTime.Hour, startTime.Minute);
+    }
+
+    public void SetClockActive(bool active)
+    {
+        isClockActive = active;
+    }
+
     IEnumerator UpdateClock()
     {
         while (true)
@@ -123,6 +142,8 @@ public class DigitalClockControl : MonoBehaviour
 
     void UpdateDisplay(int hour, int minute)
     {
+        if (!isClockActive) return;
+
         currentDigits[0] = hour / 10;
         currentDigits[1] = hour % 10;
         currentDigits[2] = minute / 10;

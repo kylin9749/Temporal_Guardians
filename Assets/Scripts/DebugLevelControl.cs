@@ -13,6 +13,8 @@ public class DebugLevelControl : MonoBehaviour
         Monster = 1 << 1,
         BattleController = 1 << 2,
         Economy = 1 << 3,
+        MechaClock = 1 << 4,
+        DigitalClock = 1 << 5,
         // 可以继续添加更多模块...
     }
 
@@ -25,11 +27,11 @@ public class DebugLevelControl : MonoBehaviour
         None,
         Error,
         Warning,
+        Debug,
         Info,
-        Debug
     }
 
-    // 当前日志等级
+    // 默认日志等级
     private static LogLevel currentLogLevel = LogLevel.Warning;
 
     // 单例实例
@@ -50,6 +52,10 @@ public class DebugLevelControl : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        EnableModule(DebugModule.MechaClock);
+        EnableModule(DebugModule.BattleController);
+        SetLogLevel(LogLevel.Debug);
     }
 
     // 设置日志等级
@@ -79,8 +85,14 @@ public class DebugLevelControl : MonoBehaviour
     // 日志打印方法
     public static void Log(string message, DebugModule module, LogLevel level = LogLevel.Info)
     {
+        // Debug.Log("DebugLevelControl.Module: " + module);
+        // Debug.Log("DebugLevelControl.Level: " + level);
+        // Debug.Log("DebugLevelControl.IsModuleEnabled: " + IsModuleEnabled(module));
+        // Debug.Log("DebugLevelControl.IsLevelEnabled: " + (level >= currentLogLevel));
         if (!IsModuleEnabled(module) || level > currentLogLevel)
+        {
             return;
+        }
 
         string modulePrefix = $"[{module}]";
         

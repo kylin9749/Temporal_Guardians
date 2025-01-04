@@ -1,17 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class LevelController : MonoBehaviour
 {
     private int selectedChapter;
+    public Button[] levelButtons;
     // Start is called before the first frame update
     void Start()
     {
         selectedChapter = PlayerPrefs.GetInt("SelectedChapter", 1); // 默认值为1
 
         // 根据chapter值进行相应的关卡初始化
+        for (int i = 0; i < levelButtons.Length; i++)
+        {
+            levelButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = "Level" + (i + 1).ToString();
+        }
     }
 
     // Update is called once per frame

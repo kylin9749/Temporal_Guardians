@@ -16,6 +16,7 @@ MonoBehaviour:
   initialMoney: 500
   initialHealth: 10
   levelType: 1
+  startTimeHour: 2
   waves:
   - waveDelay: 0
     enemies:

@@ -19,6 +19,8 @@ public class BattleController : MonoBehaviour
     public static BattleController Instance;
     private string currentLevel;
     private int enemyNumber = 0;
+    private MechaClockControl mechaClockControl;
+    private DigitalClockControl digitalClockControl;
 
     public GameObject endGameUI;
     public TextMeshProUGUI endGameUIString;
@@ -30,6 +32,11 @@ public class BattleController : MonoBehaviour
     void Awake()
     {
         Instance = this;
+
+    }
+
+    void Start()
+    {
         // 检查是否有存储的关卡索引
         if (PlayerPrefs.HasKey("CurrentLevel"))
         {
@@ -47,12 +54,6 @@ public class BattleController : MonoBehaviour
         }
     }
 
-    void Start()
-    {
-        // 移除任何硬编码的初始化
-        // 现在将由外部调用 InitialLevelConfig 来设置关卡
-    }
-
     public void InitialLevelConfig(string levelIndex)
     {
         currentWave = 0;  // 重置波次
@@ -68,10 +69,17 @@ public class BattleController : MonoBehaviour
             if (config.levelType == LevelType.MechaClock)
             {
                 MechaClockLevel.SetActive(true);
+                mechaClockControl = MechaClockLevel.GetComponent<MechaClockControl>();
+                mechaClockControl.SetClockTime(config.startTimeHour * 60 * 60);
+                mechaClockControl.SetClockActive(false);
+                
             }
             else if (config.levelType == LevelType.DigitalClock)
             {
                 DigitalClockLevel.SetActive(true);
+                digitalClockControl = DigitalClockLevel.GetComponent<DigitalClockControl>();
+                digitalClockControl.SetClockTime(config.startTimeHour * 60 * 60);
+                digitalClockControl.SetClockActive(false);
             }
         }
         else
@@ -144,6 +152,8 @@ public class BattleController : MonoBehaviour
 
         StartCoroutine(SpawnWave(currentWave));
 
+        setClockEnable(true);
+
         //调试代码，只出1个怪
         // GameObject enemy = Instantiate(enemyPrefab, transform);
         // if (enemy != null)
@@ -152,6 +162,21 @@ public class BattleController : MonoBehaviour
         // }
     }
 
+    private void setClockEnable(bool enable)
+    {
+        if (currentLevelData.levelType == LevelType.MechaClock)
+        {
+            mechaClockControl.SetClockActive(enable);
+        }
+        else if (currentLevelData.levelType == LevelType.DigitalClock)
+        {
+            digitalClockControl.SetClockActive(enable);
+        }
+        else
+        {
+            Debug.LogError("未找到时钟类型!");
+        }
+    }
     private IEnumerator SpawnWave(int waveIndex)
     {
         isWaveActive = true;

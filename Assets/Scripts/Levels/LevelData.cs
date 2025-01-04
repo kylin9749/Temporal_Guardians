@@ -14,6 +14,7 @@ public class LevelData : ScriptableObject
     public int initialMoney;              // 玩家初始金钱
     public int initialHealth;             // 玩家初始血量
     public LevelType levelType;           // 关卡类型
+    public float startTimeHour;            // 开始时间小时
 
     [System.Serializable]
     public class WaveData

@@ -9,14 +9,16 @@ public class MechaClockControl : MonoBehaviour
     public GameObject hourHand;
     public float timeScale = 60f;
     private float timeOffset = 0f;
-    
     // 添加表盘中心点引用
     public Transform clockCenter;
-    
     // 添加更新间隔控制
     private float updateInterval = 0.1f; // 每0.1秒更新一次
     private float nextUpdateTime = 0f;
     private bool isClockActive = false;
+    private float startMinuteAngle;
+    private float startHourAngle;
+    private float startHours;
+    private float startMinutes;
 
     // 添加新的变量来存储重叠的防御塔
     private List<towerCommon> overlappingTowers = new List<towerCommon>();
@@ -38,7 +40,56 @@ public class MechaClockControl : MonoBehaviour
         // 确保时针和分针都有触发器类型的碰撞体
         SetupCollider(minuteHand);
         SetupCollider(hourHand);
+
+        // 启动协程
+        StartCoroutine(UpdateClockHands());
     }
+
+    public void SetClockActive(bool active)
+    {
+        isClockActive = active;
+    }
+
+    public void SetClockTime(float timeInSeconds)
+    {
+        DebugLevelControl.Log("SetClockTime: " + timeInSeconds,
+            DebugLevelControl.DebugModule.MechaClock,
+            DebugLevelControl.LogLevel.Debug);
+
+        timeOffset = timeInSeconds;
+
+        DebugLevelControl.Log("timeOffset: " + timeOffset,
+            DebugLevelControl.DebugModule.MechaClock,
+            DebugLevelControl.LogLevel.Debug);
+
+        // 立即更新指针位置
+        float gameTime = timeInSeconds;
+        DebugLevelControl.Log("gameTime: " + gameTime,
+            DebugLevelControl.DebugModule.MechaClock,
+            DebugLevelControl.LogLevel.Debug);
+
+        float totalMinutes = gameTime / 60f;
+        DebugLevelControl.Log("totalMinutes: " + totalMinutes,
+            DebugLevelControl.DebugModule.MechaClock,
+            DebugLevelControl.LogLevel.Debug);
+
+        startHours = (totalMinutes / 60f) % 12f;
+        startMinutes = totalMinutes % 60f;
+        
+        startMinuteAngle = startMinutes * 6f;
+        startHourAngle = startHours * 30f + startMinutes * 0.5f;
+
+        DebugLevelControl.Log("startMinuteAngle: " + startMinuteAngle,
+            DebugLevelControl.DebugModule.MechaClock,
+            DebugLevelControl.LogLevel.Debug);
+        DebugLevelControl.Log("startHourAngle: " + startHourAngle,
+            DebugLevelControl.DebugModule.MechaClock,
+            DebugLevelControl.LogLevel.Debug);
+
+        minuteHand.transform.localRotation = Quaternion.Euler(0, 0, -startMinuteAngle);
+        hourHand.transform.localRotation = Quaternion.Euler(0, 0, -startHourAngle);
+    }
+
 
     // 添加设置碰撞体的辅助方法
     private void SetupCollider(GameObject hand)
@@ -94,39 +145,53 @@ public class MechaClockControl : MonoBehaviour
                Physics2D.IsTouching(towerCollider, minuteCollider);
     }
 
-    public void SetClockActive(bool active)
+    // 使用协程更新指针位置
+    private IEnumerator UpdateClockHands()
     {
-        isClockActive = active;
-    }
-
-    public void SetClockTime(float time)
-    {
-        timeOffset = Time.time - time;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        // if (!isClockActive) return;
-        // 检查是否需要更新
-        if (Time.time >= nextUpdateTime)
+        while (true)
         {
-            float currentTime = Time.time;
-            float gameTime = (currentTime - timeOffset) * timeScale;
-            
-            float totalMinutes = gameTime / 60f;
-            float hours = (totalMinutes / 60f) % 12f;
-            float minutes = totalMinutes % 60f;
-            
-            float minuteAngle = minutes * 6f;
-            float hourAngle = hours * 30f + minutes * 0.5f;
+            if (isClockActive)
+            {
+                float totalMinutes = timeOffset / 60f;
+                float hours = (totalMinutes / 60f) % 12f;
+                float minutes = totalMinutes % 60f;
 
-            minuteHand.transform.localRotation = Quaternion.Euler(0, 0, -minuteAngle);
-            hourHand.transform.localRotation = Quaternion.Euler(0, 0, -hourAngle);
+                float minuteAngle = minutes * 6f;
+                float hourAngle = hours * 30f;
+                DebugLevelControl.Log("minutes: " + minutes + " minuteAngle: " + minuteAngle,
+                    DebugLevelControl.DebugModule.MechaClock,
+                    DebugLevelControl.LogLevel.Debug);
+                DebugLevelControl.Log("hours: " + hours + " hourAngle: " + hourAngle,
+                    DebugLevelControl.DebugModule.MechaClock,
+                    DebugLevelControl.LogLevel.Debug);
 
-            nextUpdateTime = Time.time + updateInterval;
+                // 使用动画平滑过渡
+                StartCoroutine(AnimateHandRotation(minuteHand, -minuteAngle - startMinuteAngle));
+                StartCoroutine(AnimateHandRotation(hourHand, -hourAngle - startHourAngle));
+
+                timeOffset += 30f; // 每秒更新一次，相当于走过了30秒
+            }
+
+            yield return new WaitForSeconds(1f); // 每秒更新一次
         }
     }
 
-    
+    // 动画过渡方法
+    private IEnumerator AnimateHandRotation(GameObject hand, float targetAngle)
+    {
+        Quaternion startRotation = hand.transform.localRotation;
+        Quaternion endRotation = Quaternion.Euler(0, 0, targetAngle);
+        float duration = 1f; // 动画持续时间
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            hand.transform.localRotation = Quaternion.Slerp(startRotation, endRotation, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        hand.transform.localRotation = endRotation;
+    }
+
 }
