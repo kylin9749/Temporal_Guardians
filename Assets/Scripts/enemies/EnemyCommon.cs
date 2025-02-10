@@ -7,7 +7,6 @@ public class EnemyCommon : MonoBehaviour
     private EnemyData enemyData;
     private float currentHealth;              // 当前生命值
     private float currentMoveSpeed = 1f;      // 移动速度
-    private bool isEnraged = false;           // 是否狂暴
     public bool isSkilling = false;          // 是否正在释放技能
     public Transform healthBar = null;
     public GameObject imageObject = null;
@@ -18,13 +17,13 @@ public class EnemyCommon : MonoBehaviour
     private Vector2Int currentToward = new Vector2Int(0, 0);
     private bool isDead = false;
     private EnemySkillCommon skillComponent;
+    private float distanceToCenter;
 
     public void InitializeEnemy(EnemyData data)
     {
         // 初始化状态
         currentHealth = data.maxHealth;
         currentMoveSpeed = data.originalMoveSpeed;
-        isEnraged = false;
         
         // 保存数据引用
         enemyData = data;
@@ -140,6 +139,8 @@ public class EnemyCommon : MonoBehaviour
         // Debug.Log("currentGrid.type = " + currentGrid.Type);
         // Debug.Log("currentGrid.position = " + currentGrid.X + "," + currentGrid.Y);
 
+        distanceToCenter = CalculateDistanceToCenter(currentGrid);
+
         // 如果怪物已经走到中心点，则销毁当前怪物并触发掉血逻辑
         if(currentGrid.Type == GridType.Center)
         {
@@ -158,7 +159,7 @@ public class EnemyCommon : MonoBehaviour
         }
 
         List<MapGrid> validNeighbors = new List<MapGrid>();
-        foreach (MapGrid neighbor in GetNeighborGrids(currentGrid))
+        foreach (MapGrid neighbor in currentGrid.GetNeighborGrids())
         {
             if (MapMaker.Instance.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center)
             {
@@ -303,7 +304,7 @@ public class EnemyCommon : MonoBehaviour
             }
 
             // 遍历相邻格子
-            foreach (MapGrid neighbor in GetNeighborGrids(current))
+            foreach (MapGrid neighbor in current.GetNeighborGrids())
             {
                 // 只考虑可行走的格子（Road或Center类型）
                 if ((MapMaker.Instance.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center) 
@@ -317,30 +318,6 @@ public class EnemyCommon : MonoBehaviour
 
         // 如果找不到路径到终点，返回最大值
         return int.MaxValue;
-    }
-
-    // 获取相邻格子
-    protected List<MapGrid> GetNeighborGrids(MapGrid currentGrid)
-    {
-        List<MapGrid> neighbors = new List<MapGrid>();
-        // 上下左右四个方向
-        int[] dx = {0, 0, -1, 1};
-        int[] dy = {-1, 1, 0, 0};
-
-        for (int i = 0; i < 4; i++)
-        {
-            int newX = currentGrid.X + dx[i];
-            int newY = currentGrid.Y + dy[i];
-            
-            // 检查边界
-            if (newX >= 0 && newX < MapMaker.Instance.XColumn &&
-                newY >= 0 && newY < MapMaker.Instance.YRow)
-            {
-                // Debug.Log("newX = " + newX + ", newY = " + newY);
-                neighbors.Add(MapMaker.Instance.GridObjects[newX, newY]);
-            }
-        }
-        return neighbors;
     }
 
     // 查找中心格子
@@ -393,5 +370,11 @@ public class EnemyCommon : MonoBehaviour
         {
             stopCount--;
         }
+    }
+
+    public float DistanceToCenter
+    {
+        get { return distanceToCenter; }
+        set { distanceToCenter = value; }
     }
 }

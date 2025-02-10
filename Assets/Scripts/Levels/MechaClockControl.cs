@@ -12,8 +12,6 @@ public class MechaClockControl : MonoBehaviour
     // 添加表盘中心点引用
     public Transform clockCenter;
     // 添加更新间隔控制
-    private float updateInterval = 0.1f; // 每0.1秒更新一次
-    private float nextUpdateTime = 0f;
     private bool isClockActive = false;
     private float startMinuteAngle;
     private float startHourAngle;

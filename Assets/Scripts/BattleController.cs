@@ -87,6 +87,7 @@ public class BattleController : MonoBehaviour
             DebugLevelControl.Log($"未找到关卡 {levelIndex} 的配置", 
                 DebugLevelControl.DebugModule.BattleController, 
                 DebugLevelControl.LogLevel.Error);
+            Debug.LogError($"未找到关卡 {levelIndex} 的配置");
         }
 
         
@@ -204,6 +205,10 @@ public class BattleController : MonoBehaviour
             {
                 MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint.SetActive(false);
             }
+            else
+            {
+                Debug.LogError("未找到下一个出生点!");
+            }
             
             if (enemy != null)
             {
@@ -230,6 +235,10 @@ public class BattleController : MonoBehaviour
                 {
                     MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint.SetActive(true);
                 }
+                else
+                {
+                    Debug.LogError("未找到下一个出生点!");
+                }
             }
         }
 
@@ -245,6 +254,14 @@ public class BattleController : MonoBehaviour
             endGameUI.SetActive(true);
             endGameUIString.text = "Game Win";
             isEndGame = true;
+        }
+        else if (enemyNumber <= 0)
+        {
+            setClockEnable(false);
+        }
+        else if (enemyNumber > 0)
+        {
+            setClockEnable(true);
         }
     }
 

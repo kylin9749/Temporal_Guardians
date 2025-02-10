@@ -14,6 +14,7 @@ public class SleepSkill : TowerSkillCommon
     }
     private void BeginSkill(List<GameObject> affectedEnemies)
     {
+        tower.skillShadow.SetActive(true);
         // 对列表中的每个敌人启动睡眠协程
         foreach (GameObject enemy in affectedEnemies)
         {
@@ -47,6 +48,7 @@ public class SleepSkill : TowerSkillCommon
         // 技能释放完毕
         tower.IsSkilling = false;
         tower.CurrentMp = 0;
+        tower.skillShadow.SetActive(false);
     }
 
     private IEnumerator SleepEnemies()

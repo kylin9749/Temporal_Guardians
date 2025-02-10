@@ -28,7 +28,7 @@ public class LevelController : MonoBehaviour
     }
 
     // 加载关卡
-    private void LoadLevel(int level)
+    public void LoadLevel(int level)
     {
         // 保存当前关卡编号
         PlayerPrefs.SetString("CurrentLevel", selectedChapter.ToString() + "_" + level.ToString());

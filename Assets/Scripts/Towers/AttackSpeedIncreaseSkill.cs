@@ -23,6 +23,7 @@ public class AttackSpeedIncreaseSkill : TowerSkillCommon
         tower.AttackSpeedFactor = 2;
         tower.CurrentMp = 0;
         tower.IsSkilling = false;
+        tower.skillShadow.SetActive(true);
 
         // 3秒后恢复原始攻速
         StartCoroutine(ResetAttackSpeedAfterDelay(tower.TowerData.skillCastTime));
@@ -39,5 +40,6 @@ public class AttackSpeedIncreaseSkill : TowerSkillCommon
                 grid.Tower.GetComponent<towerCommon>().AttackSpeedFactor = 1;
             }
         }
+        tower.skillShadow.SetActive(false);
     }
 }

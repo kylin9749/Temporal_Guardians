@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,8 @@ public class towerCommon : MonoBehaviour
     protected bool enable = false;          // 防御塔是否启用
     protected float currentMp = 0;          // 防御塔当前魔法值
     protected bool isSkilling = false;      // 是否正在释放技能
-    protected List<GameObject> enemyList;   // 防御塔攻击范围内的敌人列表
+    public List<GameObject> enemyList;   // 防御塔攻击范围内的敌人列表
+    private object enemyListLock = new object();
     protected GameObject currentTarget;     // 当前攻击目标
 	protected float nextAttackTime = 0f;    // 下一次攻击的时间
     private bool isSettingTower = false;    // 是否设置塔
@@ -21,7 +23,11 @@ public class towerCommon : MonoBehaviour
     private CircleCollider2D attackRangeCollider; // 攻击范围碰撞器的引用
     private float attackSpeedFactor = 1;    // 攻击速度因子
     private float angle = 0;                // 防御塔朝向
-    public GameObject shadow;               //阴影
+    private float dmageIncreaseFactor = 0;  //临时伤害增加因子
+
+    public GameObject skillShadow;          //临时的技能特效
+    public GameObject comboEffect;          //临时combo效果
+    public GameObject zoneControl;
 
     // 防御塔技能组件
     protected TowerSkillCommon skillComponent;
@@ -94,26 +100,17 @@ public class towerCommon : MonoBehaviour
     /// Add enemies to the list
     /// </summary>
     /// <param name="newEnemy"></param>
-	public void enemyAdd(GameObject newEnemy)
+	public void enemyUpdate(Collider2D[] newEnemies)
     {
-        enemyList.Add(newEnemy);
-    }
-    /// <summary>
-    /// Remove enemies to the list
-    /// </summary>
-    /// <param name="other"></param>
-	public void enemyRemove(string other)
-    {
-		for(int i = 0; i < enemyList.Count; i++){
-			if (enemyList[i] != null)
+        lock (enemyListLock)
+        {
+            enemyList.Clear();
+            foreach (var newEnemy in newEnemies)
             {
-				if(enemyList[i].name == other)
-                {
-                    enemyList.RemoveAt(i);
-                }
-			}
-		}
-	}
+                enemyList.Add(newEnemy.gameObject);
+            }
+        }
+    }
 
     private void Attack()
     {
@@ -127,30 +124,33 @@ public class towerCommon : MonoBehaviour
             }
         }
 
+        zoneControl.GetComponent<zoneControl>().DetectEnemies();
+
         // 如果没有当前目标但敌人列表不为空，选择新目标
         if (CurrentTarget == null && enemyList != null && enemyList.Count > 0)
         {
+            //按照离中心点的距离排序，优先攻击离中心点最近的敌人
+            enemyList.Sort((a, b) =>
+            {
+                float distanceA = a.GetComponent<EnemyCommon>().DistanceToCenter;
+                float distanceB = b.GetComponent<EnemyCommon>().DistanceToCenter;
+                return distanceA.CompareTo(distanceB);
+            });
             CurrentTarget = enemyList[0];
-        }
-
-        // 检查是否可以释放技能
-        if (currentMp >= towerData.totalMp)
-        {
-            this.isSkilling = true;
-            this.CastSkill();
-        }
-
-        // 如果不是普攻加强类型的技能,则跳过后续攻击逻辑
-        if (isSkilling && (towerData.skillType != TowerSkillType.AttackBuff))
-        {
-            return;
         }
 
         // 有有效目标时发动攻击
         if (CurrentTarget != null && towerData.bulletPrefab != null)
         {
-            // 增加MP值
-            currentMp += 10;
+            if (isSkilling && towerData.skillType == TowerSkillType.AttackBuff)
+            {
+                // 释放技能期间不增加mp值
+            }
+            else
+            {
+                // 增加MP值
+                currentMp += 10;
+            }
 
             // 计算MP百分比
             float mpPercentage = (currentMp + 10) / towerData.totalMp;
@@ -179,7 +179,7 @@ public class towerCommon : MonoBehaviour
 
             // 设置子弹属性
             bulletScript.SetTarget(CurrentTarget.transform);
-            bulletScript.damage = towerData.damage;
+            bulletScript.damage = towerData.damage + dmageIncreaseFactor;
             bulletScript.speed = towerData.bulletSpeed; // 子弹速度由防御塔定义
             bulletScript.SetMovementType(BulletMovementType.Straight);
 
@@ -258,6 +258,8 @@ public class towerCommon : MonoBehaviour
 
                     BattleController.Instance.UpdateMoney(-towerData.cost);
 
+                    CheckCombo();
+
                 }
                 else
                 {
@@ -276,10 +278,24 @@ public class towerCommon : MonoBehaviour
         {
             return;
         }
-
+        
+        // 检查是否可以释放技能
+        if (currentMp >= towerData.totalMp)
+        {
+            this.isSkilling = true;
+            this.CastSkill();
+        }
+        
+        // 如果不是普攻加攻击buff类型的技能,则跳过后续攻击逻辑
+        if (isSkilling && (towerData.skillType != TowerSkillType.AttackBuff))
+        {
+            return;
+        }
+        
         if (enemyList != null && enemyList.Count > 0 && Time.time >= nextAttackTime)
         {
             Attack();
+
             nextAttackTime = Time.time + (1f / (towerData.attackSpeed * attackSpeedFactor));
         }
 
@@ -293,6 +309,28 @@ public class towerCommon : MonoBehaviour
             // 应用旋转
             transform.rotation = Quaternion.Euler(0, 0, angle);
         }
+    }
+    public void CheckCombo()
+    {
+        // 获取当前塔的周围塔
+        foreach (MapGrid neighbor in currentGrid.GetNeighborBaseGrids())
+        {
+            if (neighbor.Tower != null)
+            {
+                if (neighbor.Tower.GetComponent<towerCommon>()._TowerData.towerType == towerData.towerType)
+                {
+                    SetComboEffect();
+                    neighbor.Tower.GetComponent<towerCommon>().SetComboEffect();
+                }
+            }
+        }
+    }
+
+    public void SetComboEffect()
+    {
+        // 设置combo效果
+        comboEffect.SetActive(true);
+        dmageIncreaseFactor = 10;
     }
 
     public void DisableTower()
@@ -312,8 +350,6 @@ public class towerCommon : MonoBehaviour
         if (skillComponent != null)
         {
             skillComponent.CastSkill();
-            currentMp = 0;  // 重置MP
-            isSkilling = false;
         }
     }
 
@@ -382,5 +418,17 @@ public class towerCommon : MonoBehaviour
     {
         get { return angle; }
         set { angle = value; }
+    }
+
+    public TowerData _TowerData
+    {
+        get { return towerData; }
+        set { towerData = value; }
+    }
+
+    public float DmageIncreaseFactor
+    {
+        get { return dmageIncreaseFactor; }
+        set { dmageIncreaseFactor = value; }
     }
 }

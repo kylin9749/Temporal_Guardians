@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 493080}
   - component: {fileID: 21253106}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   m_Component:
   - component: {fileID: 490574}
   - component: {fileID: 21286150}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BarImg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -177,7 +177,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 471050}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Lifebar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -212,7 +212,7 @@ GameObject:
   - component: {fileID: 4847432767128126379}
   - component: {fileID: 6110630184164077872}
   - component: {fileID: 7962333299364949673}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: enemy3
   m_TagString: enemies
   m_Icon: {fileID: 0}
@@ -324,7 +324,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3296556761496426452}
   - component: {fileID: 7968753555214751625}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}

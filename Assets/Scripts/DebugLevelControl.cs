@@ -52,10 +52,6 @@ public class DebugLevelControl : MonoBehaviour
         {
             Destroy(gameObject);
         }
-
-        EnableModule(DebugModule.MechaClock);
-        EnableModule(DebugModule.BattleController);
-        SetLogLevel(LogLevel.Debug);
     }
 
     // 设置日志等级

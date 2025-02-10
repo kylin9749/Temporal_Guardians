@@ -122,7 +122,15 @@ public class DigitalClockControl : MonoBehaviour
         startTime = new System.DateTime(2024, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0);
         
         // 立即更新显示
-        UpdateDisplay(startTime.Hour, startTime.Minute);
+        currentDigits[0] = timeSpan.Hours / 10;
+        currentDigits[1] = timeSpan.Hours % 10;
+        currentDigits[2] = timeSpan.Minutes / 10;
+        currentDigits[3] = timeSpan.Minutes % 10;
+
+        for (int i = 0; i < 4; i++)
+        {
+            UpdateDigit(i, currentDigits[i]);
+        }
     }
 
     public void SetClockActive(bool active)
