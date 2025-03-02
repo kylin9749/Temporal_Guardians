@@ -109,8 +109,8 @@ public class DigitalClockControl : MonoBehaviour
         StartCoroutine(UpdateClock());
 
         //始终显示电子表中间的两个点
-        MapMaker.Instance.GridObjects[14, 4].transform.Find("DigitalClockShandow").gameObject.SetActive(true);
-        MapMaker.Instance.GridObjects[14, 8].transform.Find("DigitalClockShandow").gameObject.SetActive(true);
+        BattleController.Instance.GetMapMaker().GridObjects[14, 4].transform.Find("DigitalClockShandow").gameObject.SetActive(true);
+        BattleController.Instance.GetMapMaker().GridObjects[14, 8].transform.Find("DigitalClockShandow").gameObject.SetActive(true);
     }
 
     public void SetClockTime(float timeInSeconds)
@@ -187,7 +187,7 @@ public class DigitalClockControl : MonoBehaviour
         int startX = digitPositions[position, 0];
         int startY = digitPositions[position, 1];
 
-        MapGrid grid = MapMaker.Instance.GridObjects[gridPos.x, gridPos.y];
+        MapGrid grid = BattleController.Instance.GetMapMaker().GridObjects[gridPos.x, gridPos.y];
         if (grid == null) return;
         if (grid.Tower == null) return;
 
@@ -212,7 +212,7 @@ public class DigitalClockControl : MonoBehaviour
 
     void UpdateGridForDigitalClock(int position, Vector2Int gridPos, bool active)
     {
-        MapMaker.Instance.GridObjects[gridPos.x, gridPos.y]
+        BattleController.Instance.GetMapMaker().GridObjects[gridPos.x, gridPos.y]
             .DigitalClockShandow.SetActive(active);
     }
 }

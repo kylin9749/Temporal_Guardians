@@ -7,20 +7,10 @@ using UnityEngine;
 
 public class MapMaker : MonoBehaviour
 {
-    //开关属性、画线开关
-    public bool drawLine;
-    //地图宽
-    private float mapWidth;
-    //高
-    private float mapHeight;
-    //格子宽
-    private float gridWidth;
-    //格子高
-    private float gridHeight;
     //行数
-    public int yRow = 13; 
+    private int yRow = 13; 
     //列数
-    public int xColumn = 29;
+    private int xColumn = 29;
     //防御塔基台
     public GameObject gridBase;
     //格子对象数组
@@ -29,20 +19,8 @@ public class MapMaker : MonoBehaviour
     private MapGrid centerGrid;
     //出怪点
     public List<MapGrid> spawnPoints;
-    public static MapMaker Instance;
     //地图原点
     private Vector3 mapOrigin;
-
-    void Start()
-    {
-
-    }
-
-    private void Awake()
-    {
-        Instance = this;
-        InitMap();
-    }
 
     public int XColumn
     {
@@ -60,16 +38,6 @@ public class MapMaker : MonoBehaviour
         set { gridObjects = value; }
     }
 
-    public float GridWidth
-    {
-        get { return gridWidth; }
-    }
-
-    public float GridHeight
-    {
-        get { return gridHeight; }
-    }
-
     public MapGrid CenterGrid
     {
         get { return centerGrid; }
@@ -82,9 +50,16 @@ public class MapMaker : MonoBehaviour
     }
 
     //初始化地图
-    public void InitMap()
+    public void InitMap(int X, int Y)
     {
-        CalculateSize();
+        if (!isSingleNum(X) || !isSingleNum(Y))
+        {
+            Debug.LogError("行数和列数必须是单数");
+        }
+
+        this.yRow = Y;
+        this.xColumn = X;
+
         //创建格子对象数组
         gridObjects = new MapGrid[xColumn, yRow];
         spawnPoints = new List<MapGrid>();
@@ -154,8 +129,8 @@ public class MapMaker : MonoBehaviour
                 gridObjects[x, y] = gridObject;
                 // Debug.Log("gridObject.position = " + gridObject.X + "," + gridObject.Y);
 
-                itemGo.transform.localScale = new Vector3(gridWidth, gridHeight, 1);
-                itemGo.transform.position = CorretPositon(x * gridWidth, y * gridHeight);
+                itemGo.transform.localScale = new Vector3(1, 1, 1);
+                itemGo.transform.position = CorretPositon(x , y);
                 itemGo.transform.SetParent(transform);
             }
         }
@@ -171,29 +146,32 @@ public class MapMaker : MonoBehaviour
         return type == GridType.RoadVertical || type == GridType.RoadHorizontal || type == GridType.Cross;
     }
 
+    private  bool isSingleNum(int num)
+    {
+        return num % 2 == 1;
+    }
+
     //获取格子类型
     public GridType GetGridType(int x, int y)
     {
-        if (y == 1 || y == 3 || y == 5 || y == 7 || y == 9 || y == 11)
+        if (isSingleNum(y))
         {
             // 直接检查x是否为垂直道路的条件
-            if (x == 1 || x == 3 || x == 5 || x == 7 || x == 9 || x == 11 || x == 13 || x == 15
-                    || x == 17 || x == 19 || x == 21 || x == 23 || x == 25 || x == 27)
+            if (isSingleNum(x))
             {
                 return GridType.Cross;
             }
         }
 
-        if (x == 1 || x == 3 || x == 5 || x == 7 || x == 9 || x == 11 || x == 13 || x == 15
-                || x == 17 || x == 19 || x == 21 || x == 23 || x == 25 || x == 27)
+        if (isSingleNum(x))
         {
             return GridType.RoadVertical;
         }
-        else if (y == 1 || y == 3 || y == 5 || y == 7 || y == 9 || y == 11)
+        else if (isSingleNum(y))
         {
             return GridType.RoadHorizontal;
         }
-        else if (x == 14 && y == 6)
+        else if ((x == (xColumn - 1) / 2) && (y == (yRow - 1) / 2))
         {
             return GridType.Center;
         }
@@ -206,64 +184,7 @@ public class MapMaker : MonoBehaviour
     //纠正预制件的起始位置
     public Vector3 CorretPositon(float x,float y)
     {
-        return new Vector3(x - mapWidth / 2 + gridWidth / 2, y- mapHeight / 2 + gridHeight / 2);
-    }
-
-    //计算地图格子的宽高
-    private void CalculateSize()
-    {
-        //左下角
-        Vector3 leftDown = new Vector3(0.1f, 0.1f);
-        //右上角
-        Vector3 rightUp = new Vector3(0.9f, 0.9f);
-        //视口坐标转世界坐标 、 左下角的世界坐标
-        Vector3 posOne = Camera.main.ViewportToWorldPoint(leftDown);
-        //右上角
-        Vector3 posTwo = Camera.main.ViewportToWorldPoint(rightUp);
-
-        //地图高
-        mapHeight = posTwo.y - posOne.y;
-        //格子的宽
-        gridWidth = mapHeight / yRow;
-        //格子高
-        gridHeight = mapHeight / yRow;
-        //地图宽
-        mapWidth = gridWidth * xColumn;
-    }
-
-
-    // 画格子
-    private void OnDrawGizmos()
-    {
-        //画线
-        if (drawLine)
-        {
-            //计算格子的大小
-            CalculateSize();
-            //格子的颜色
-            Gizmos.color = Color.green;
-            //画出行数   这里的值应该是要等于行数的
-            for (int y = 0; y <= yRow; y++)
-            {
-                //起始位置
-                Vector3 startPos = new Vector3(-mapWidth / 2, -mapHeight / 2 + y * gridHeight);
-                //终点坐标
-                Vector3 endPos = new Vector3(mapWidth / 2, -mapHeight / 2 + y * gridHeight);
-                //画线
-                Gizmos.DrawLine(startPos, endPos);
-            }
-            //画列
-            for (int x = 0; x <= xColumn; x++)
-            {
-                Vector3 startPos = new Vector3(-mapWidth / 2 + gridWidth * x, mapHeight / 2);
-                Vector3 endPos = new Vector3(-mapWidth / 2 + x * gridWidth, -mapHeight / 2);
-                Gizmos.DrawLine(startPos, endPos);
-            }
-        }
-        else
-        {
-            return;
-        }
+        return new Vector3(x - xColumn / 2 , y - yRow / 2);
     }
 
     //获取离防御塔最近的base类型的格子

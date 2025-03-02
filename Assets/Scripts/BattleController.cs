@@ -7,7 +7,11 @@ using UnityEngine.SceneManagement;
 public class BattleController : MonoBehaviour
 {
     [SerializeField] public LevelData[] levelConfigs;
+    [SerializeField] public ChapterData[] chapterConfigs;
     private LevelData currentLevelData;
+    private ChapterData currentChapterData;
+    private MapMaker mapMaker;
+
     private int currentWave = 0;
     private bool isWaveActive = false;
     private bool isEndGame = false;
@@ -16,6 +20,7 @@ public class BattleController : MonoBehaviour
     private readonly object moneyLock = new object();
     private readonly object healthLock = new object();
     private readonly object enemyNumberLock = new object();
+
     public static BattleController Instance;
     private string currentLevel;
     private int enemyNumber = 0;
@@ -59,37 +64,59 @@ public class BattleController : MonoBehaviour
         currentWave = 0;  // 重置波次
         isWaveActive = false;  // 重置状态
         
-        var config = System.Array.Find(levelConfigs, x => x.levelName == levelIndex);
-        if (config != null)
-        {   
-            currentLevelData = config;
-            currentMoney = config.initialMoney;
-            currentHealth = config.initialHealth;
-            InitUI();
-            if (config.levelType == LevelType.MechaClock)
-            {
-                MechaClockLevel.SetActive(true);
-                mechaClockControl = MechaClockLevel.GetComponent<MechaClockControl>();
-                mechaClockControl.SetClockTime(config.startTimeHour * 60 * 60);
-                mechaClockControl.SetClockActive(false);
-                
-            }
-            else if (config.levelType == LevelType.DigitalClock)
-            {
-                DigitalClockLevel.SetActive(true);
-                digitalClockControl = DigitalClockLevel.GetComponent<DigitalClockControl>();
-                digitalClockControl.SetClockTime(config.startTimeHour * 60 * 60);
-                digitalClockControl.SetClockActive(false);
-            }
-        }
-        else
+        // 加载章节配置
+        string[] levelPrefix = levelIndex.Split('_');  //取'_'之前的部分
+        Debug.Log("levelPrefix = " + levelPrefix[0]);
+        var chapterConfig = System.Array.Find(chapterConfigs, x => x.chapterName == levelPrefix[0]);
+        if (chapterConfig == null)
         {
+            DebugLevelControl.Log($"未找到章节 {levelPrefix[0]} 的配置", 
+                DebugLevelControl.DebugModule.BattleController, 
+                DebugLevelControl.LogLevel.Error);
+            Debug.LogError($"未找到章节 {levelPrefix[0]} 的配置");
+        }
+
+        currentChapterData = chapterConfig;
+        mapMaker = GetComponent<MapMaker>();
+        mapMaker.InitMap(chapterConfig.xColumn, chapterConfig.yRow);
+        
+        if (chapterConfig.chapterType == ChapterType.MechaClock)
+        {
+            MechaClockLevel.SetActive(true);
+            mechaClockControl = MechaClockLevel.GetComponent<MechaClockControl>();
+            mechaClockControl.SetClockActive(false);
+            
+        }
+        else if (chapterConfig.chapterType == ChapterType.DigitalClock)
+        {
+            DigitalClockLevel.SetActive(true);
+            digitalClockControl = DigitalClockLevel.GetComponent<DigitalClockControl>();
+            digitalClockControl.SetClockActive(false);
+        }
+
+        // 加载关卡配置
+        var levelConfig = System.Array.Find(levelConfigs, x => x.levelName == levelIndex);
+        if (levelConfig == null)
+        {   
             DebugLevelControl.Log($"未找到关卡 {levelIndex} 的配置", 
                 DebugLevelControl.DebugModule.BattleController, 
                 DebugLevelControl.LogLevel.Error);
             Debug.LogError($"未找到关卡 {levelIndex} 的配置");
         }
 
+        currentLevelData = levelConfig;
+        currentMoney = levelConfig.initialMoney;
+        currentHealth = levelConfig.initialHealth;
+        InitUI();
+
+        if (chapterConfig.chapterType == ChapterType.MechaClock)
+        {
+            mechaClockControl.SetClockTime(levelConfig.startTimeHour * 60 * 60);                
+        }
+        else if (chapterConfig.chapterType == ChapterType.DigitalClock)
+        {
+            digitalClockControl.SetClockTime(levelConfig.startTimeHour * 60 * 60);
+        }
         
     }
     private void InitUI()
@@ -189,9 +216,9 @@ public class BattleController : MonoBehaviour
         foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
         {
             // 添加出生点索引检查
-            if (enemyInfo.spawnPoint < 0 || enemyInfo.spawnPoint >= MapMaker.Instance.spawnPoints.Count)
+            if (enemyInfo.spawnPoint < 0 || enemyInfo.spawnPoint >= mapMaker.spawnPoints.Count)
             {
-                Debug.LogError($"无效的出生点索引: {enemyInfo.spawnPoint}. 可用出生点数量: {MapMaker.Instance.spawnPoints.Count}");
+                Debug.LogError($"无效的出生点索引: {enemyInfo.spawnPoint}. 可用出生点数量: {mapMaker.spawnPoints.Count}");
                 continue;
             }
             // 等待当前敌人生成的延迟
@@ -199,11 +226,11 @@ public class BattleController : MonoBehaviour
 
             // 在指定出生点生成敌人
             GameObject enemy = EnemyFactory.Instance.CreateEnemy(enemyInfo.enemyType,
-                MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].transform.position);
+                mapMaker.spawnPoints[enemyInfo.spawnPoint].transform.position);
             
-            if (MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint != null)
+            if (mapMaker.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint != null)
             {
-                MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint.SetActive(false);
+                mapMaker.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint.SetActive(false);
             }
             else
             {
@@ -231,9 +258,9 @@ public class BattleController : MonoBehaviour
             LevelData.WaveData wave = currentLevelData.waves[currentWave];
             foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
             {
-                if (MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint != null)
+                if (mapMaker.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint != null)
                 {
-                    MapMaker.Instance.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint.SetActive(true);
+                    mapMaker.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint.SetActive(true);
                 }
                 else
                 {
@@ -322,5 +349,10 @@ public class BattleController : MonoBehaviour
     public void OnClickReturnToLevelSelect()
     {
         SceneManager.LoadScene("LevelScene");
+    }
+
+    public MapMaker GetMapMaker()
+    {
+        return mapMaker;
     }
 }

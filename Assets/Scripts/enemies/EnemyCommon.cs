@@ -8,6 +8,7 @@ public class EnemyCommon : MonoBehaviour
     private float currentHealth;              // 当前生命值
     private float currentMoveSpeed = 1f;      // 移动速度
     public bool isSkilling = false;          // 是否正在释放技能
+    private MapMaker mapMaker;
     public Transform healthBar = null;
     public GameObject imageObject = null;
     private int stopCount = 0;
@@ -101,6 +102,8 @@ public class EnemyCommon : MonoBehaviour
     {
         currentHealth = enemyData.maxHealth;
         currentMoveSpeed = enemyData.originalMoveSpeed;
+
+        mapMaker = BattleController.Instance.GetMapMaker();
     }
 
     // Update is called once per frame
@@ -161,7 +164,7 @@ public class EnemyCommon : MonoBehaviour
         List<MapGrid> validNeighbors = new List<MapGrid>();
         foreach (MapGrid neighbor in currentGrid.GetNeighborGrids())
         {
-            if (MapMaker.Instance.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center)
+            if (mapMaker.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center)
             {
                 validNeighbors.Add(neighbor);
             }
@@ -235,9 +238,9 @@ public class EnemyCommon : MonoBehaviour
     protected MapGrid GetCurrentGridByPosition()
     {
         Vector3 currentPos = transform.position;
-        Vector3 mapOrigin = MapMaker.Instance.MapOrigin;
-        float gridWidth = MapMaker.Instance.GridWidth;
-        float gridHeight = MapMaker.Instance.GridHeight;
+        Vector3 mapOrigin = mapMaker.MapOrigin;
+        float gridWidth = 1;
+        float gridHeight = 1;
         
         // 先用除法得到大致范围
         // Debug.Log("currentPos = " + currentPos.x + "," + currentPos.y);
@@ -258,10 +261,10 @@ public class EnemyCommon : MonoBehaviour
                 int checkY = baseY + yOffset;
                 
                 // 确保在地图范围内
-                if (checkX >= 0 && checkX < MapMaker.Instance.XColumn &&
-                    checkY >= 0 && checkY < MapMaker.Instance.YRow)
+                if (checkX >= 0 && checkX < mapMaker.XColumn &&
+                    checkY >= 0 && checkY < mapMaker.YRow)
                 {
-                    MapGrid grid = MapMaker.Instance.GridObjects[checkX, checkY];
+                    MapGrid grid = mapMaker.GridObjects[checkX, checkY];
                     // Debug.Log("checkX = " + checkX + ", checkY = " + checkY);
                     // Debug.Log("grid.position = " + grid.X + "," + grid.Y);
                     Vector3 gridCenter = grid.transform.position;
@@ -307,7 +310,7 @@ public class EnemyCommon : MonoBehaviour
             foreach (MapGrid neighbor in current.GetNeighborGrids())
             {
                 // 只考虑可行走的格子（Road或Center类型）
-                if ((MapMaker.Instance.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center) 
+                if ((mapMaker.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center) 
                     && !distances.ContainsKey(neighbor))
                 {
                     queue.Enqueue(neighbor);
@@ -323,12 +326,12 @@ public class EnemyCommon : MonoBehaviour
     // 查找中心格子
     protected MapGrid FindCenterGrid()
     {
-        if (MapMaker.Instance.CenterGrid == null)
+        if (mapMaker.CenterGrid == null)
         {
             return null;
         }
 
-        return MapMaker.Instance.CenterGrid;
+        return mapMaker.CenterGrid;
     }
 
     protected virtual void Die(bool isEnemyWin)

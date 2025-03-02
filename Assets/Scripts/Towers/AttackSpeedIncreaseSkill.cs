@@ -8,7 +8,7 @@ public class AttackSpeedIncreaseSkill : TowerSkillCommon
     public override void CastSkill()
     {
         MapGrid baseGrid = tower.CurrentGrid;
-        adjacentBases = MapMaker.Instance.GetAdjacentBases(baseGrid);
+        adjacentBases = BattleController.Instance.GetMapMaker().GetAdjacentBases(baseGrid);
 
         foreach (MapGrid grid in adjacentBases)
         {

@@ -52,7 +52,7 @@ public class MapGrid : MonoBehaviour
 
     public MapGrid GetGridFromVector2Int(Vector2Int tile)
     {
-        return MapMaker.Instance.gridObjects[X + tile.x, Y + tile.y];
+        return BattleController.Instance.GetMapMaker().gridObjects[X + tile.x, Y + tile.y];
     }
 
     // 获取相邻格子
@@ -69,11 +69,11 @@ public class MapGrid : MonoBehaviour
             int newY = Y + dy[i];
             
             // 检查边界
-            if (newX >= 0 && newX < MapMaker.Instance.XColumn &&
-                newY >= 0 && newY < MapMaker.Instance.YRow)
+            if (newX >= 0 && newX < BattleController.Instance.GetMapMaker().XColumn &&
+                newY >= 0 && newY < BattleController.Instance.GetMapMaker().YRow)
             {
                 // Debug.Log("newX = " + newX + ", newY = " + newY);
-                neighbors.Add(MapMaker.Instance.GridObjects[newX, newY]);
+                neighbors.Add(BattleController.Instance.GetMapMaker().GridObjects[newX, newY]);
             }
         }
         return neighbors;
@@ -100,11 +100,11 @@ public class MapGrid : MonoBehaviour
             int newY = Y + dy[i];
             
             // 检查边界
-            if (newX >= 0 && newX < MapMaker.Instance.XColumn &&
-                newY >= 0 && newY < MapMaker.Instance.YRow)
+            if (newX >= 0 && newX < BattleController.Instance.GetMapMaker().XColumn &&
+                newY >= 0 && newY < BattleController.Instance.GetMapMaker().YRow)
             {
                 // Debug.Log("newX = " + newX + ", newY = " + newY);
-                neighbors.Add(MapMaker.Instance.GridObjects[newX, newY]);
+                neighbors.Add(BattleController.Instance.GetMapMaker().GridObjects[newX, newY]);
             }
         }
         return neighbors;

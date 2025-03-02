@@ -206,7 +206,7 @@ public class towerCommon : MonoBehaviour
         if (!isSettingTower)
         {
             //离鼠标最近的base类型的格子上生成预览图
-            nearestBase = MapMaker.Instance.GetNearestBase(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            nearestBase = BattleController.Instance.GetMapMaker().GetNearestBase(Camera.main.ScreenToWorldPoint(Input.mousePosition));
             if (nearestBase != null)
             {
                 // 如果当前防御塔所在的格子与离防御塔最近的格子不一致，则更新预览图 
