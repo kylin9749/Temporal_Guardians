@@ -23,6 +23,8 @@ public class MechaClockControl : MonoBehaviour
     
     void Start()
     {
+        UpdateClockHandsSize();
+
         timeOffset = Time.time;
         
         // 如果没有指定表盘中心，就使用当前物体的位置作为中心
@@ -41,6 +43,38 @@ public class MechaClockControl : MonoBehaviour
 
         // 启动协程
         StartCoroutine(UpdateClockHands());
+    }
+
+    private void UpdateClockHandsSize()
+    {
+        //从battleController中获取地图大小
+        int x = BattleController.Instance.GetMapMaker().XColumn;
+        int y = BattleController.Instance.GetMapMaker().YRow;
+
+        // 先取较小的一个值的一半作为分针的半径
+        float minuteHandLength = Mathf.Min(x, y) / 2f;
+        
+        // 时针的长度是分针的一半
+        float hourHandLength = minuteHandLength / 2f;
+
+        //设置时针对象中的gameobject的size
+        GameObject minuteHandSpriteObject = minuteHand.transform.Find("MinuteHandSprite").gameObject;
+        minuteHandSpriteObject.transform.localScale = new Vector3(2f, minuteHandLength, 0f);
+        GameObject hourHandSpriteObject = hourHand.transform.Find("HourHandSprite").gameObject;
+        hourHandSpriteObject.transform.localScale = new Vector3(2f, hourHandLength, 0f);
+
+        // 设置时针和分针的位置
+        minuteHandSpriteObject.transform.localPosition = new Vector3(0f, minuteHandLength / 2f, 0f);
+        hourHandSpriteObject.transform.localPosition = new Vector3(0f, hourHandLength / 2f, 0f);
+
+        // 设置时针和分针的碰撞体大小 和 offset
+        BoxCollider2D minuteCollider = minuteHand.GetComponent<BoxCollider2D>();
+        minuteCollider.size = new Vector2(2f, minuteHandLength);
+        minuteCollider.offset = new Vector2(0f, minuteHandLength / 2f);
+        BoxCollider2D hourCollider = hourHand.GetComponent<BoxCollider2D>();
+        hourCollider.size = new Vector2(2f, hourHandLength);
+        hourCollider.offset = new Vector2(0f, hourHandLength / 2f);
+
     }
 
     public void SetClockActive(bool active)
