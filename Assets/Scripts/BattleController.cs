@@ -11,6 +11,7 @@ public class BattleController : MonoBehaviour
     private LevelData currentLevelData;
     private ChapterData currentChapterData;
     private MapMaker mapMaker;
+    private TowerComboControl towerComboControl;
 
     private int currentWave = 0;
     private bool isWaveActive = false;
@@ -57,6 +58,9 @@ public class BattleController : MonoBehaviour
             string levelIndex = "1_1";
             InitialLevelConfig(levelIndex);
         }
+
+        //初始化位置联动系统
+        towerComboControl = new TowerComboControl();
     }
 
     public void InitialLevelConfig(string levelIndex)
@@ -294,6 +298,16 @@ public class BattleController : MonoBehaviour
 
     private void createTower(TowerType towerType)
     {
+        // 检查是否有防御塔正在选择Combo
+        if (towerComboControl.IsInComboMode())
+        {
+            if (UITipManager.Instance != null)
+            {
+                UITipManager.Instance.ShowTip("请先完成当前的组合操作");
+            }
+            return;
+        }
+        
         GameObject tower = TowerFactory.Instance.CreateTower(towerType, GetMousePosition());
     }
 
@@ -354,5 +368,10 @@ public class BattleController : MonoBehaviour
     public MapMaker GetMapMaker()
     {
         return mapMaker;
+    }
+
+    public TowerComboControl GetTowerComboControl()
+    {
+        return towerComboControl;
     }
 }

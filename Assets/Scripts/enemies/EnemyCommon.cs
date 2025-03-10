@@ -239,16 +239,25 @@ public class EnemyCommon : MonoBehaviour
     {
         Vector3 currentPos = transform.position;
         Vector3 mapOrigin = mapMaker.MapOrigin;
+
+        // 目前编辑器中配置的格子大小均为1
         float gridWidth = 1;
         float gridHeight = 1;
         
+        DebugLevelControl.Log("currentPos.x = " + currentPos.x,
+            DebugLevelControl.DebugModule.Enemy,
+            DebugLevelControl.LogLevel.Error);
+        DebugLevelControl.Log("mapOrigin.x = " + mapOrigin.x,
+            DebugLevelControl.DebugModule.Enemy,
+            DebugLevelControl.LogLevel.Error);
+        DebugLevelControl.Log("gridWidth = " + gridWidth + " gridHeight = " + gridHeight,
+            DebugLevelControl.DebugModule.Enemy,
+            DebugLevelControl.LogLevel.Error);
+
         // 先用除法得到大致范围
-        // Debug.Log("currentPos = " + currentPos.x + "," + currentPos.y);
-        // Debug.Log("mapOrigin = " + mapOrigin.x + "," + mapOrigin.y);
-        // Debug.Log("gridWidth = " + gridWidth + ", gridHeight = " + gridHeight);
         int baseX = Mathf.FloorToInt((currentPos.x - mapOrigin.x) / gridWidth);
         int baseY = Mathf.FloorToInt((currentPos.y - mapOrigin.y) / gridHeight);
-        // Debug.Log("baseX = " + baseX + ", baseY = " + baseY);
+
         // 检查周围3x3范围内的格子
         float minDistance = float.MaxValue;
         MapGrid closestGrid = null;

@@ -17,6 +17,14 @@ public enum TowerType
     AttackSpeedIncrease
 }
 
+public enum TowerColor
+{
+    White,
+    Yellow,
+    Red,
+    Blue
+}
+
 public class TowerFactory : MonoBehaviour 
 {
     [SerializeField] private GameObject towerBasePrefab;

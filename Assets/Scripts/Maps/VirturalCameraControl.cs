@@ -8,9 +8,9 @@ using UnityEngine.UIElements;
 public class VirturalCameraControl : MonoBehaviour
 {
     public CinemachineVirtualCamera cinemachineVirtualCamera;
-    private float targetFiledView = 50; //默认相机缩放
+    private float targetFiledView = 10; //默认相机缩放
     private float fieldOfViewMax = 100; //最大相机缩放
-    private float fieldOfViewMin = 10;  //最小相机缩放
+    private float fieldOfViewMin = 2;  //最小相机缩放
     private bool dragPanActive = false; //是否正在使用右键拖拽
     private Vector2 lastDragPosition;
     
@@ -39,7 +39,7 @@ public class VirturalCameraControl : MonoBehaviour
 
         if (dragPanActive)
         {
-            Vector2 mouseMovementDelta = (Vector2)Input.mousePosition - lastDragPosition;
+            Vector2 mouseMovementDelta = lastDragPosition - (Vector2)Input.mousePosition;
 
             float dragPanSpeed = 2f;
             inputDir.x = mouseMovementDelta.x * dragPanSpeed;
@@ -48,7 +48,7 @@ public class VirturalCameraControl : MonoBehaviour
             lastDragPosition = Input.mousePosition;
         }
 
-        Vector3 moveDir = transform.forward * inputDir.y + transform.right * inputDir.x;
+        Vector3 moveDir = transform.right * inputDir.x + transform.up * inputDir.y;
         float moveSpeed = 10f;
         transform.position += moveDir * moveSpeed * Time.deltaTime;
     }

@@ -23,8 +23,10 @@ public class MechaClockControl : MonoBehaviour
     
     void Start()
     {
+        // 调用方法更新时钟指针的大小
         UpdateClockHandsSize();
 
+        // 记录当前时间作为时间偏移量
         timeOffset = Time.time;
         
         // 如果没有指定表盘中心，就使用当前物体的位置作为中心
@@ -74,7 +76,6 @@ public class MechaClockControl : MonoBehaviour
         BoxCollider2D hourCollider = hourHand.GetComponent<BoxCollider2D>();
         hourCollider.size = new Vector2(2f, hourHandLength);
         hourCollider.offset = new Vector2(0f, hourHandLength / 2f);
-
     }
 
     public void SetClockActive(bool active)

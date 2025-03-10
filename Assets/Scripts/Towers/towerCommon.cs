@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class towerCommon : MonoBehaviour
 {
@@ -26,8 +27,10 @@ public class towerCommon : MonoBehaviour
     private float dmageIncreaseFactor = 0;  //临时伤害增加因子
 
     public GameObject skillShadow;          //临时的技能特效
-    public GameObject comboEffect;          //临时combo效果
+    public GameObject highLightEffect;      //高亮特效
     public GameObject zoneControl;
+    [SerializeField] private GameObject towerCombineConfirmPanel; // 在Inspector中指定Panel预制体
+    [SerializeField] private Transform comboTransform;
 
     // 防御塔技能组件
     protected TowerSkillCommon skillComponent;
@@ -37,6 +40,16 @@ public class towerCommon : MonoBehaviour
 
     // 添加提示管理器的引用
     private UITipManager tipManager;
+
+    // 添加UI面板引用
+    [SerializeField] private GameObject towerPanel; // 在Inspector中指定Panel预制体
+    private GameObject currentPanel; // 当前实例化的面板
+    private GameObject currentCombineConfirmPanel;
+    private Canvas mainCanvas; // 主Canvas的引用
+    private TowerComboState comboState = TowerComboState.Normal;
+    private TowerComboGroup currentGroup;
+    private Dictionary<string, GameObject> connectionSprites;
+    private bool isMouseOver = false;
 
     public void InitializeTower(TowerData data)
     {
@@ -78,6 +91,18 @@ public class towerCommon : MonoBehaviour
         // 设置塔的攻击范围预览图大小(这里是直径，所以*2)
         attackRangeImage = this.transform.Find("AttackRangeImage");
         attackRangeImage.localScale = new Vector3(data.attackRange * 2, data.attackRange * 2, 0);
+
+        connectionSprites = new Dictionary<string, GameObject>
+        {
+            {"North", comboTransform.Find("North").gameObject},
+            {"South", comboTransform.Find("South").gameObject},
+            {"East", comboTransform.Find("East").gameObject},
+            {"West", comboTransform.Find("West").gameObject},
+            {"Northeast", comboTransform.Find("Northeast").gameObject},
+            {"Northwest", comboTransform.Find("Northwest").gameObject},
+            {"Southeast", comboTransform.Find("Southeast").gameObject},
+            {"Southwest", comboTransform.Find("Southwest").gameObject}
+        };
     }
 
     private System.Type GetSkillType(TowerType towerType)
@@ -182,7 +207,6 @@ public class towerCommon : MonoBehaviour
             bulletScript.damage = towerData.damage + dmageIncreaseFactor;
             bulletScript.speed = towerData.bulletSpeed; // 子弹速度由防御塔定义
             bulletScript.SetMovementType(BulletMovementType.Straight);
-
         }
     }
 
@@ -205,74 +229,11 @@ public class towerCommon : MonoBehaviour
     {
         if (!isSettingTower)
         {
-            //离鼠标最近的base类型的格子上生成预览图
-            nearestBase = BattleController.Instance.GetMapMaker().GetNearestBase(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-            if (nearestBase != null)
-            {
-                // 如果当前防御塔所在的格子与离防御塔最近的格子不一致，则更新预览图 
-                if (lastNearestBase != nearestBase)
-                {
-                    // 将防御塔移动到最近的格子中心位置
-                    transform.position = nearestBase.transform.position;
-
-                    // 显示当前的攻击范围图片
-                    attackRangeImage.gameObject.SetActive(true);
-
-                    lastNearestBase = nearestBase;
-                }
-            }
-
-            // 如果鼠标右键点击，则取消塔
-            if (Input.GetMouseButtonDown(1))
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            // 如果鼠标左键点击，则设置塔
-            if (Input.GetMouseButtonDown(0))
-            {
-                if (BattleController.Instance.GetMoney() >= towerData.cost)
-                {
-                    //如果该格子上已经放置了其他塔，则不放置
-                    if (nearestBase.Tower != null)
-                    {
-                        // 将Debug.Log改为UI提示
-                        if (tipManager != null)
-                        {
-                            tipManager.ShowTip("该位置已有防御塔，无法放置");
-                        }
-                        return;
-                    }
-                    
-                    //将防御塔放置在离防御塔最近的格子上
-                    transform.position = nearestBase.transform.position;
-
-                    //隐藏攻击范围图片
-                    attackRangeImage.gameObject.SetActive(false);
-
-                    // 设置塔为已放置
-                    isSettingTower = true;
-                    currentGrid = nearestBase;
-                    currentGrid.Tower = gameObject;
-
-                    BattleController.Instance.UpdateMoney(-towerData.cost);
-
-                    CheckCombo();
-
-                }
-                else
-                {
-                    if (tipManager != null)
-                    {
-                        tipManager.ShowTip("金币不足，无法建造");
-                    }
-                    return;
-                }
-            }
-
+            HandleTowerPlacement();
             return;
         }
+
+        HandleTowerClick();
 
         if (!enable)
         {
@@ -310,28 +271,116 @@ public class towerCommon : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, 0, angle);
         }
     }
-    public void CheckCombo()
+
+#region 防御塔放置相关
+    // 处理防御塔放置相关的逻辑
+    private void HandleTowerPlacement()
     {
-        // 获取当前塔的周围塔
-        foreach (MapGrid neighbor in currentGrid.GetNeighborBaseGrids())
+        UpdateTowerPreview();
+        
+        // 处理鼠标输入
+        if (Input.GetMouseButtonDown(1))
         {
-            if (neighbor.Tower != null)
-            {
-                if (neighbor.Tower.GetComponent<towerCommon>()._TowerData.towerType == towerData.towerType)
-                {
-                    SetComboEffect();
-                    neighbor.Tower.GetComponent<towerCommon>().SetComboEffect();
-                }
-            }
+            CancelTowerPlacement();
+            return;
+        }
+        
+        if (Input.GetMouseButtonDown(0))
+        {
+            TryPlaceTower();
         }
     }
 
-    public void SetComboEffect()
+    // 更新防御塔预览位置和显示
+    private void UpdateTowerPreview()
     {
-        // 设置combo效果
-        comboEffect.SetActive(true);
-        dmageIncreaseFactor = 10;
+        nearestBase = BattleController.Instance.GetMapMaker().GetNearestBase(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        if (nearestBase != null && lastNearestBase != nearestBase)
+        {
+            transform.position = nearestBase.transform.position;
+            attackRangeImage.gameObject.SetActive(true);
+            lastNearestBase = nearestBase;
+        }
     }
+
+    // 取消防御塔放置
+    private void CancelTowerPlacement()
+    {
+        Destroy(gameObject);
+    }
+
+    // 尝试放置防御塔
+    private void TryPlaceTower()
+    {
+        if (!CanAffordTower())
+        {
+            ShowCannotAffordTip();
+            return;
+        }
+
+        if (IsGridOccupied())
+        {
+            ShowGridOccupiedTip();
+            return;
+        }
+
+        PlaceTower();
+    }
+
+    // 检查是否有足够的金钱
+    private bool CanAffordTower()
+    {
+        return BattleController.Instance.GetMoney() >= towerData.cost;
+    }
+
+    // 检查格子是否被占用
+    private bool IsGridOccupied()
+    {
+        return nearestBase.Tower != null;
+    }
+
+    // 显示金钱不足提示
+    private void ShowCannotAffordTip()
+    {
+        if (tipManager != null)
+        {
+            tipManager.ShowTip("金币不足，无法建造");
+        }
+    }
+
+    // 显示格子被占用提示
+    private void ShowGridOccupiedTip()
+    {
+        if (tipManager != null)
+        {
+            tipManager.ShowTip("该位置已有防御塔，无法放置");
+        }
+    }
+
+    // 执行防御塔放置
+    private void PlaceTower()
+    {
+        transform.position = nearestBase.transform.position;
+        attackRangeImage.gameObject.SetActive(false);
+        
+        isSettingTower = true;
+        currentGrid = nearestBase;
+        currentGrid.Tower = gameObject;
+        
+        BattleController.Instance.UpdateMoney(-towerData.cost);
+        BattleController.Instance.GetTowerComboControl().CheckCombo(this);
+
+
+        
+
+        // 获取主Canvas引用
+        mainCanvas = GameObject.FindObjectOfType<Canvas>();
+        if (mainCanvas == null)
+        {
+            Debug.LogError("Cannot find main Canvas!");
+        }
+    }
+#endregion
 
     public void DisableTower()
     {
@@ -369,6 +418,384 @@ public class towerCommon : MonoBehaviour
     public void SetEnemyList(List<GameObject> enemies)
     {
         enemyList = enemies;
+    }
+
+#region 防御塔面板
+    private bool CheckMouseHit()
+    {
+        // 获取鼠标在世界坐标中的位置
+        Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        
+        // 使用OverlapPoint直接检测点击位置
+        Collider2D hitCollider = Physics2D.OverlapPoint(mousePosition);
+        
+        // 或者使用小范围的圆形检测，提供更好的点击体验
+        // Collider2D hitCollider = Physics2D.OverlapCircle(mousePosition, 0.1f);
+
+        return hitCollider != null && hitCollider.gameObject == gameObject;
+    }
+    // 处理塔点击事件
+    private void HandleTowerClick()
+    {
+        // 如果不在设置塔状态，则返回
+        if (!isSettingTower) return;
+        
+        DebugLevelControl.Log("HandleTowerClick Input.GetMouseButtonDown(0) = " + Input.GetMouseButtonDown(0).ToString(),
+            DebugLevelControl.DebugModule.TowerCombo,
+            DebugLevelControl.LogLevel.Info);
+        DebugLevelControl.Log("HandleTowerClick comboState = " + comboState.ToString(),
+            DebugLevelControl.DebugModule.TowerCombo,
+            DebugLevelControl.LogLevel.Info);
+        // 如果鼠标左键被按下或者组合状态为正在选择
+        if (Input.GetMouseButtonDown(0) || comboState == TowerComboState.BeingSelected)
+        {
+            // 如果鼠标指针在UI上，则返回
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+
+            // 获取鼠标位置
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            // 发射射线
+            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+
+            // 如果射线击中物体，并且物体是当前物体
+            if (hit.collider != null && hit.collider.gameObject == gameObject)
+            {
+                DebugLevelControl.Log("HandleTowerClick HIT ",
+                    DebugLevelControl.DebugModule.TowerCombo,
+                    DebugLevelControl.LogLevel.Debug);
+
+                // 如果组合状态为正在选择，则显示加入组确认面板
+                if (comboState == TowerComboState.BeingSelected && Input.GetMouseButtonDown(0))
+                {
+                    // 显示加入组确认面板
+                    ShowJoinGroupConfirmPanel(currentGroup);
+                }
+                // 否则，显示塔面板
+                else if (Input.GetMouseButtonDown(0))
+                {
+                    ShowTowerPanel();
+                }
+                else if (comboState == TowerComboState.BeingSelected)
+                {
+                    if (!isMouseOver)  // 添加状态标记避免重复调用
+                    {
+                        isMouseOver = true;
+                        BattleController.Instance.GetTowerComboControl().OnGroupHover(currentGroup);
+                    }
+                }
+                
+            }
+            // 如果当前面板不为空，则隐藏塔面板
+            else
+            {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    HideTowerPanel();
+                }
+                else if (comboState == TowerComboState.BeingSelected)
+                {
+                    isMouseOver = false;
+                    BattleController.Instance.GetTowerComboControl().OnGroupHoverExit();
+                }
+            }
+        }
+    }
+    // 显示面板
+    private void ShowTowerPanel()
+    {
+        // 如果面板已经存在，直接返回
+        if (currentPanel != null) return;
+
+        // 实例化面板
+        currentPanel = Instantiate(towerPanel, mainCanvas.transform);
+        
+        // 设置面板位置（可以适当偏移，避免遮挡防御塔）
+        currentPanel.transform.position = transform.position + new Vector3(0, 1f, 0);
+        
+        // 可以在这里设置面板中按钮的点击事件
+        SetupPanelButtons();
+    }
+
+    // 隐藏面板
+    private void HideTowerPanel()
+    {
+        if (currentPanel != null)
+        {
+            Destroy(currentPanel);
+            currentPanel = null;
+        }
+    }
+
+    // 设置面板按钮的点击事件
+    private void SetupPanelButtons()
+    {
+        if (currentPanel == null) return;
+
+        // 获取按钮引用并添加监听器
+        Button upgradeBtn = currentPanel.transform.Find("UpgradeButton").GetComponent<Button>();
+        Button repairBtn = currentPanel.transform.Find("RepairButton").GetComponent<Button>();
+        Button combineBtn = currentPanel.transform.Find("CombineButton").GetComponent<Button>();
+
+        upgradeBtn.onClick.AddListener(() => OnUpgradeClick());
+        repairBtn.onClick.AddListener(() => OnRepairClick());
+        combineBtn.onClick.AddListener(() => OnCombineClick());
+    }
+
+    // 按钮点击回调函数
+    private void OnUpgradeClick()
+    {
+        // 实现升级逻辑
+        Debug.Log("Upgrade clicked");
+    }
+
+    private void OnRepairClick()
+    {
+        // 实现维修逻辑
+        Debug.Log("Repair clicked");
+    }
+
+    private void OnCombineClick()
+    {
+        DebugLevelControl.Log("Enter OnCombineClick() currentGroup = " + currentGroup,
+            DebugLevelControl.DebugModule.TowerCombo,
+            DebugLevelControl.LogLevel.Debug);
+        HideTowerPanel();
+
+        // 检查是否在组中
+        if (currentGroup != null)
+        {
+            // 已在组中，显示退出组确认面板
+            ShowLeaveGroupConfirmPanel();
+        }
+        else
+        {
+            // 进入组合模式
+            EnterCombineMode();
+        }
+    }
+
+    // 进入组合模式
+    private void EnterCombineMode()
+    {
+        // 通知TowerComboControl进入组合模式
+        BattleController.Instance.GetTowerComboControl().CheckCombo(this);
+    }
+
+    // 显示加入组确认面板
+    private void ShowJoinGroupConfirmPanel(TowerComboGroup group)
+    {
+        if (currentCombineConfirmPanel != null) return;
+        
+        // 设置面板位置为鼠标位置
+        Vector3 mousePosition = Input.mousePosition;
+        currentCombineConfirmPanel = Instantiate(towerCombineConfirmPanel, mainCanvas.transform);
+        currentCombineConfirmPanel.transform.position = mousePosition;
+
+        // 设置确认和取消按钮的事件
+        Button confirmBtn = currentPanel.transform.Find("ConfirmButton").GetComponent<Button>();
+        Button cancelBtn = currentPanel.transform.Find("CancelButton").GetComponent<Button>();
+
+        confirmBtn.onClick.AddListener(() => {
+            BattleController.Instance.GetTowerComboControl().AddTowerIntoHoverGroup(this);
+            HideTowerPanel();
+        });
+
+        cancelBtn.onClick.AddListener(() => {
+            HideTowerPanel();
+        });
+    }
+
+    // 显示退出组确认面板
+    private void ShowLeaveGroupConfirmPanel()
+    {
+        if (currentPanel != null) return;
+
+        currentPanel = Instantiate(towerCombineConfirmPanel, mainCanvas.transform);
+        RectTransform rectTransform = currentPanel.GetComponent<RectTransform>();
+        
+        // 设置面板位置为鼠标位置
+        Vector2 mousePosition = Input.mousePosition;
+        rectTransform.position = mousePosition;
+
+        // 设置确认和取消按钮的事件
+        Button confirmBtn = currentPanel.transform.Find("ConfirmButton").GetComponent<Button>();
+        Button cancelBtn = currentPanel.transform.Find("CancelButton").GetComponent<Button>();
+
+        confirmBtn.onClick.AddListener(() => {
+            BattleController.Instance.GetTowerComboControl().RemoveTowerFromHoverGroup(this);
+            HideTowerPanel();
+        });
+
+        cancelBtn.onClick.AddListener(() => {
+            HideTowerPanel();
+        });
+    }
+
+    // 设置防御塔状态
+    public void SetComboState(TowerComboState state)
+    {
+        comboState = state;
+        switch (state)
+        {
+            case TowerComboState.Normal:
+                SetHighlight(false);
+                break;
+            case TowerComboState.Selecting:
+                SetHighlight(true);
+                break;
+            case TowerComboState.BeingSelected:
+                SetHighlight(false);
+                break;
+            case TowerComboState.InGroup:
+                // 可以设置特殊效果
+                break;
+        }
+    }
+#endregion
+
+#region 防御塔联动
+    public void SetHighlight(bool highlight)
+    {
+        if (highlight)
+        {
+            highLightEffect.SetActive(true);
+        }
+        else
+        {
+            highLightEffect.SetActive(false);
+        }
+    }
+    
+    public void setCurrentGroup(TowerComboGroup group)
+    {
+        currentGroup = group;
+    }
+
+    public void CreateConnectionVisuals()
+    {
+        if (currentGroup == null) return;
+
+        foreach (var otherTower in currentGroup.GetTowers())
+        {
+            if (otherTower == this) continue;
+
+            // 检查是否相邻
+            if (IsAdjacent(this, otherTower))
+            {
+                // 获取相对方向
+                Vector2Int direction = GetDirection(this, otherTower);
+                
+                // 激活对应的连接线
+                ActivateConnection(this, otherTower, direction);
+            }
+        }
+    }
+
+    // 检查两个防御塔是否相邻
+    public bool IsAdjacent(towerCommon tower1, towerCommon tower2)
+    {
+        MapGrid grid1 = tower1.CurrentGrid;
+        MapGrid grid2 = tower2.CurrentGrid;
+
+        DebugLevelControl.Log("grid1 = " + grid1 + ", grid2 = " + grid2,
+            DebugLevelControl.DebugModule.TowerCombo,
+            DebugLevelControl.LogLevel.Debug);
+
+        if (grid1 == null || grid2 == null)
+        {
+            return false;
+        }
+
+        int dx = Mathf.Abs(grid1.X - grid2.X);
+        int dy = Mathf.Abs(grid2.Y - grid1.Y);
+        
+        // 横、竖、斜方向均视为相邻
+        return dx <= 2 && dy <= 2 && !(dx == 0 && dy == 0);
+    }
+    public void DisableConnectionVisuals()
+    {
+        // 禁用所有连接线
+        foreach (var sprite in connectionSprites.Values)
+        {
+            sprite.SetActive(false);
+        }
+
+        // 如果在组中，需要处理相邻防御塔的连接线
+        if (currentGroup != null)
+        {
+            foreach (var otherTower in currentGroup.GetTowers())
+            {
+                if (otherTower == this) continue;
+
+                if (IsAdjacent(this, otherTower))
+                {
+                    // 获取相对方向
+                    Vector2Int direction = GetDirection(this, otherTower);
+                    
+                    // 禁用对方对应的连接线
+                    DisableConnection(otherTower, GetOppositeDirection(direction));
+                }
+            }
+        }
+    }
+    private Vector2Int GetDirection(towerCommon from, towerCommon to)
+    {
+        int dx = to.CurrentGrid.X - from.CurrentGrid.X;
+        int dy = to.CurrentGrid.Y - from.CurrentGrid.Y;
+        return new Vector2Int(dx, dy);
+    }
+
+    private void ActivateConnection(towerCommon tower1, towerCommon tower2, Vector2Int direction)
+    {
+        // 激活当前防御塔的连接线
+        string direction1 = GetDirectionString(direction);
+        if (connectionSprites.ContainsKey(direction1))
+        {
+            connectionSprites[direction1].SetActive(true);
+        }
+
+        // 激活目标防御塔的连接线
+        string direction2 = GetDirectionString(new Vector2Int(-direction.x, -direction.y));
+        if (tower2.connectionSprites.ContainsKey(direction2))
+        {
+            tower2.connectionSprites[direction2].SetActive(true);
+        }
+    }
+
+    private void DisableConnection(towerCommon tower, Vector2Int direction)
+    {
+        string directionString = GetDirectionString(direction);
+        if (tower.connectionSprites.ContainsKey(directionString))
+        {
+            tower.connectionSprites[directionString].SetActive(false);
+        }
+    }
+
+    private string GetDirectionString(Vector2Int direction)
+    {
+        if (direction.x == 0 && direction.y == 1) return "North";
+        if (direction.x == 0 && direction.y == -1) return "South";
+        if (direction.x == 1 && direction.y == 0) return "East";
+        if (direction.x == -1 && direction.y == 0) return "West";
+        if (direction.x == 1 && direction.y == 1) return "Northeast";
+        if (direction.x == -1 && direction.y == 1) return "Northwest";
+        if (direction.x == 1 && direction.y == -1) return "Southeast";
+        if (direction.x == -1 && direction.y == -1) return "Southwest";
+        return "";
+    }
+
+    private Vector2Int GetOppositeDirection(Vector2Int direction)
+    {
+        return new Vector2Int(-direction.x, -direction.y);
+    }
+#endregion
+
+    private void OnMouseOver()
+    {
+
     }
 
     // 为protected属性添加get和set方法

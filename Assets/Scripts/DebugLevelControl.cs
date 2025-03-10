@@ -10,16 +10,17 @@ public class DebugLevelControl : MonoBehaviour
     {
         None = 0,
         Tower = 1 << 0,
-        Monster = 1 << 1,
+        Enemy = 1 << 1,
         BattleController = 1 << 2,
         Economy = 1 << 3,
         MechaClock = 1 << 4,
         DigitalClock = 1 << 5,
+        TowerCombo = 1 << 6,
         // 可以继续添加更多模块...
     }
 
     // 当前启用的调试模块
-    private static DebugModule activeModules = DebugModule.None;
+    private static DebugModule activeModules = DebugModule.TowerCombo;
     
     // 日志等级
     public enum LogLevel
@@ -32,7 +33,7 @@ public class DebugLevelControl : MonoBehaviour
     }
 
     // 默认日志等级
-    private static LogLevel currentLogLevel = LogLevel.Warning;
+    private static LogLevel currentLogLevel = LogLevel.Debug;
 
     // 单例实例
     private static DebugLevelControl instance;

@@ -5,6 +5,7 @@ public class TowerData : ScriptableObject
 {
     public string towerName;
     public TowerType towerType;
+    public TowerColor towerColor;
     public float bulletSpeed = 1f;          // 子弹飞行速度
     public float skillCastTime = 1.0f;      // 技能释放时间
     public int damage = 0;                  // 防御塔的攻击伤害值
