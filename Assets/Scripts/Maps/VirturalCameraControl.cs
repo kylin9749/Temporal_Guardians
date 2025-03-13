@@ -9,8 +9,8 @@ public class VirturalCameraControl : MonoBehaviour
 {
     public CinemachineVirtualCamera cinemachineVirtualCamera;
     private float targetFiledView = 10; //默认相机缩放
-    private float fieldOfViewMax = 100; //最大相机缩放
-    private float fieldOfViewMin = 2;  //最小相机缩放
+    private float fieldOfViewMax = 80; //最大相机缩放
+    private float fieldOfViewMin = 1;  //最小相机缩放
     private bool dragPanActive = false; //是否正在使用右键拖拽
     private Vector2 lastDragPosition;
     
@@ -57,11 +57,11 @@ public class VirturalCameraControl : MonoBehaviour
     {
         if (Input.mouseScrollDelta.y > 0) 
         {
-            targetFiledView -= 5;
+            targetFiledView -= 1;
         }
         else if (Input.mouseScrollDelta.y < 0)
         {
-            targetFiledView += 5;
+            targetFiledView += 1;
         }
 
         targetFiledView = Mathf.Clamp(targetFiledView, fieldOfViewMin, fieldOfViewMax);

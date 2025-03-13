@@ -71,10 +71,10 @@ public class MechaClockControl : MonoBehaviour
 
         // 设置时针和分针的碰撞体大小 和 offset
         BoxCollider2D minuteCollider = minuteHand.GetComponent<BoxCollider2D>();
-        minuteCollider.size = new Vector2(2f, minuteHandLength);
+        minuteCollider.size = new Vector2(1f, minuteHandLength);
         minuteCollider.offset = new Vector2(0f, minuteHandLength / 2f);
         BoxCollider2D hourCollider = hourHand.GetComponent<BoxCollider2D>();
-        hourCollider.size = new Vector2(2f, hourHandLength);
+        hourCollider.size = new Vector2(1f, hourHandLength);
         hourCollider.offset = new Vector2(0f, hourHandLength / 2f);
     }
 
@@ -227,4 +227,19 @@ public class MechaClockControl : MonoBehaviour
         hand.transform.localRotation = endRotation;
     }
 
+    public void CleanupResources()
+    {
+        // 停止所有协程
+        StopAllCoroutines();
+        
+        // 清理重叠的防御塔列表
+        overlappingTowers.Clear();
+    
+        // 重置状态
+        isClockActive = false;
+    }
+    private void OnDestroy()
+    {
+        CleanupResources();
+    }
 }

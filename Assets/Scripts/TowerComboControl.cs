@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public enum TowerComboState
 {
     Normal,         // 普通状态
@@ -20,6 +21,7 @@ public enum TowerComboType
 // 组合对象池类
 public class TowerComboGroupPool
 {
+#if (false)
     private Stack<TowerComboGroup> pool;
     
     public TowerComboGroupPool(int initialSize)
@@ -291,4 +293,5 @@ public class TowerComboControl
         selectingTower = null;
         availableGroups.Clear();
     }
+#endif
 }

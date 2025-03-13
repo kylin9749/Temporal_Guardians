@@ -11,22 +11,19 @@ public class BattleController : MonoBehaviour
     private LevelData currentLevelData;
     private ChapterData currentChapterData;
     private MapMaker mapMaker;
-    private TowerComboControl towerComboControl;
+    //private TowerComboControl towerComboControl;
 
     private int currentWave = 0;
     private bool isWaveActive = false;
     private bool isEndGame = false;
     private int currentMoney;
     private int currentHealth;
-    private readonly object moneyLock = new object();
-    private readonly object healthLock = new object();
-    private readonly object enemyNumberLock = new object();
-
     public static BattleController Instance;
     private string currentLevel;
     private int enemyNumber = 0;
     private MechaClockControl mechaClockControl;
     private DigitalClockControl digitalClockControl;
+    private bool isPaused = false;
 
     public GameObject endGameUI;
     public TextMeshProUGUI endGameUIString;
@@ -35,10 +32,13 @@ public class BattleController : MonoBehaviour
     public TextMeshProUGUI moneyText;  // 添加对金钱UI的引用
     public TextMeshProUGUI healthText; // 添加对生命值UI的引用
     public TextMeshProUGUI healthTextCenter; // 添加对生命值UI的引用
+    [SerializeField] private PauseMenuUI pauseMenuUI;  // 在Inspector中指定
+
+    private int previousWave = -1; // 添加变量跟踪上一次的波次
+
     void Awake()
     {
         Instance = this;
-
     }
 
     void Start()
@@ -58,9 +58,8 @@ public class BattleController : MonoBehaviour
             string levelIndex = "1_1";
             InitialLevelConfig(levelIndex);
         }
-
         //初始化位置联动系统
-        towerComboControl = new TowerComboControl();
+        //towerComboControl = new TowerComboControl();
     }
 
     public void InitialLevelConfig(string levelIndex)
@@ -78,6 +77,7 @@ public class BattleController : MonoBehaviour
                 DebugLevelControl.DebugModule.BattleController, 
                 DebugLevelControl.LogLevel.Error);
             Debug.LogError($"未找到章节 {levelPrefix[0]} 的配置");
+            return;
         }
 
         currentChapterData = chapterConfig;
@@ -122,6 +122,8 @@ public class BattleController : MonoBehaviour
             digitalClockControl.SetClockTime(levelConfig.startTimeHour * 60 * 60);
         }
         
+        // 初始化后更新生成点状态
+        UpdateSpawnPointsVisibility();
     }
     private void InitUI()
     {
@@ -136,30 +138,21 @@ public class BattleController : MonoBehaviour
     }
 
     public void UpdateMoney(int money)
-    {
-        lock (moneyLock)
-        {
-            currentMoney += money;
-            moneyText.text = $"Money: {currentMoney}";
-        }
+    {   
+        currentMoney += money;
+        moneyText.text = $"Money: {currentMoney}";
     }
 
     public void UpdateEnemyNumber(int number)
     {
-        lock (enemyNumberLock)
-        {
-            enemyNumber += number;
-        }
+        enemyNumber += number;
     }
     
     public void UpdateHealth(int health)
     {
-        lock (healthLock)
-        {
-            currentHealth += health;
-            healthText.text = $"Health: {currentHealth}";
-            healthTextCenter.text = currentHealth.ToString();
-        }
+        currentHealth += health;
+        healthText.text = $"Health: {currentHealth}";
+        healthTextCenter.text = currentHealth.ToString();
     }
 
     public void OnStartButtonClick()
@@ -196,11 +189,11 @@ public class BattleController : MonoBehaviour
 
     private void setClockEnable(bool enable)
     {
-        if (currentLevelData.levelType == LevelType.MechaClock)
+        if (currentChapterData.chapterType == ChapterType.MechaClock)
         {
             mechaClockControl.SetClockActive(enable);
         }
-        else if (currentLevelData.levelType == LevelType.DigitalClock)
+        else if (currentChapterData.chapterType == ChapterType.DigitalClock)
         {
             digitalClockControl.SetClockActive(enable);
         }
@@ -249,6 +242,9 @@ public class BattleController : MonoBehaviour
 
         isWaveActive = false;
         currentWave++;
+        
+        // 波次变化后更新下一波生成点
+        UpdateSpawnPointsVisibility();
     }
 
     // Update is called once per frame
@@ -256,21 +252,11 @@ public class BattleController : MonoBehaviour
     {
         if (isEndGame) return;
 
-        if (currentWave < currentLevelData.waves.Count)
+        // 只在波次变化时更新生成点
+        if (currentWave < currentLevelData.waves.Count && currentWave != previousWave)
         {
-            //显示下一波敌人的出生点
-            LevelData.WaveData wave = currentLevelData.waves[currentWave];
-            foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
-            {
-                if (mapMaker.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint != null)
-                {
-                    mapMaker.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint.SetActive(true);
-                }
-                else
-                {
-                    Debug.LogError("未找到下一个出生点!");
-                }
-            }
+            UpdateSpawnPointsVisibility();
+            previousWave = currentWave;
         }
 
         if (currentHealth <= 0)
@@ -278,7 +264,6 @@ public class BattleController : MonoBehaviour
             endGameUI.SetActive(true);
             endGameUIString.text = "Game Over";
             isEndGame = true;
-
         }
         else if (currentWave >= currentLevelData.waves.Count && enemyNumber <= 0)
         {
@@ -296,9 +281,30 @@ public class BattleController : MonoBehaviour
         }
     }
 
+    // 提取出专门的方法来更新生成点可见性
+    private void UpdateSpawnPointsVisibility()
+    {
+        if (currentWave < currentLevelData.waves.Count)
+        {
+            LevelData.WaveData wave = currentLevelData.waves[currentWave];
+            foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
+            {
+                if (mapMaker.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint != null)
+                {
+                    mapMaker.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint.SetActive(true);
+                }
+                else
+                {
+                    Debug.LogError("未找到下一个出生点!");
+                }
+            }
+        }
+    }
+
     private void createTower(TowerType towerType)
     {
         // 检查是否有防御塔正在选择Combo
+        /*
         if (towerComboControl.IsInComboMode())
         {
             if (UITipManager.Instance != null)
@@ -307,7 +313,7 @@ public class BattleController : MonoBehaviour
             }
             return;
         }
-        
+        */
         GameObject tower = TowerFactory.Instance.CreateTower(towerType, GetMousePosition());
     }
 
@@ -365,13 +371,97 @@ public class BattleController : MonoBehaviour
         SceneManager.LoadScene("LevelScene");
     }
 
+    private void CleanupBeforeSceneChange()
+    {
+        // 停止所有协程
+        StopAllCoroutines();
+    
+        // 重置静态实例
+        Instance = null;
+        
+        // 清理时钟资源
+        if (mechaClockControl != null)
+        {
+            mechaClockControl.CleanupResources();
+        }
+        
+        if (digitalClockControl != null)
+        {
+            digitalClockControl.CleanupResources();
+        }
+        
+        // 清理敌人和防御塔资源
+        if (mapMaker != null)
+        {
+            mapMaker.CleanupResources();
+        }
+        
+        // 重置状态变量
+        currentWave = 0;
+        isWaveActive = false;
+        isEndGame = false;
+        enemyNumber = 0;
+        isPaused = false;
+        
+        // 恢复正常时间流速（如果暂停状态）
+        Time.timeScale = 1f;
+    }
+
+    // 处理场景卸载事件
+    private void OnDestroy()
+    {
+        CleanupBeforeSceneChange();
+    }
     public MapMaker GetMapMaker()
     {
         return mapMaker;
     }
 
+    public void OnClickPause()
+    {
+        TogglePause();
+    }
+
+    /*
     public TowerComboControl GetTowerComboControl()
     {
         return towerComboControl;
+    }
+    */
+
+    public void TogglePause()
+    {
+        isPaused = !isPaused;
+        Time.timeScale = isPaused ? 0f : 1f;
+        
+        // 可以在这里触发UI显示
+        if (isPaused)
+        {
+            ShowPauseMenu();
+        }
+        else
+        {
+            HidePauseMenu();
+        }
+    }
+    private void ShowPauseMenu()
+    {
+        if (pauseMenuUI != null)
+        {
+            pauseMenuUI.Show();
+        }
+    }
+    
+    private void HidePauseMenu()
+    {
+        if (pauseMenuUI != null)
+        {
+            pauseMenuUI.Hide();
+        }
+    }
+    
+    public bool IsPaused
+    {
+        get { return isPaused; }
     }
 }

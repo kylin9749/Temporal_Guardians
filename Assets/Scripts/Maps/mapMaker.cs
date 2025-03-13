@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -250,5 +249,76 @@ public class MapMaker : MonoBehaviour
         }
 
         return adjacentBases.ToArray();
+    }
+
+    /// <summary>
+    /// 清理地图资源，在场景转换前调用
+    /// </summary>
+    public void CleanupResources()
+    {
+        // 清理格子上的防御塔引用
+        if (gridObjects != null)
+        {
+            for (int x = 0; x < xColumn; x++)
+            {
+                for (int y = 0; y < yRow; y++)
+                {
+                    if (gridObjects[x, y] != null)
+                    {
+                        gridObjects[x, y].Tower = null;
+                    }
+                }
+            }
+        }
+        
+        // 清理出生点列表
+        if (spawnPoints != null)
+        {
+            spawnPoints.Clear();
+        }
+        
+        // 重置中心格子引用
+        centerGrid = null;
+        
+        // 清理地图上的所有特效和临时游戏对象
+        CleanupMapEffects();
+    }
+
+    /// <summary>
+    /// 清理地图上的特效和临时对象
+    /// </summary>
+    private void CleanupMapEffects()
+    {
+        if (gridObjects != null)
+        {
+            for (int x = 0; x < xColumn; x++)
+            {
+                for (int y = 0; y < yRow; y++)
+                {
+                    if (gridObjects[x, y] != null)
+                    {
+                        // 禁用NextSpawnPoint提示
+                        if (gridObjects[x, y].NextSpawnPoint != null)
+                        {
+                            gridObjects[x, y].NextSpawnPoint.SetActive(false);
+                        }
+                        
+                        // 禁用时钟阴影
+                        if (gridObjects[x, y].DigitalClockShandow != null)
+                        {
+                            gridObjects[x, y].DigitalClockShandow.SetActive(false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 在对象销毁时自动清理资源
+    /// </summary>
+    private void OnDestroy()
+    {
+        CleanupResources();
     }
 }

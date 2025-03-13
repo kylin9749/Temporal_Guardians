@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   towerName: SleepTower
   towerType: 0
+  towerColor: 0
   bulletSpeed: 3
   skillCastTime: 3
   damage: 5
@@ -26,3 +27,4 @@ MonoBehaviour:
   skillType: 0
   skillDamage: 50
   skillRange: 5
+  skillName: 111

@@ -215,4 +215,24 @@ public class DigitalClockControl : MonoBehaviour
         BattleController.Instance.GetMapMaker().GridObjects[gridPos.x, gridPos.y]
             .DigitalClockShandow.SetActive(active);
     }
+
+    public void CleanupResources()
+    {
+        // 停止所有协程
+        StopAllCoroutines();
+        
+        // 清理数字塔字典
+        if (digitTowers != null)
+        {
+            digitTowers.Clear();
+        }
+        
+        // 重置状态
+        isClockActive = false;
+    }
+
+    private void OnDestroy()
+    {
+        CleanupResources();
+    }
 }

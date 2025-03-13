@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   towerName: BoomTower
   towerType: 1
+  towerColor: 0
   bulletSpeed: 2
   skillCastTime: 2
   damage: 4
@@ -26,3 +27,4 @@ MonoBehaviour:
   skillType: 1
   skillDamage: 20
   skillRange: 5
+  skillName: 222

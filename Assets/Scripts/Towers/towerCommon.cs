@@ -233,7 +233,7 @@ public class towerCommon : MonoBehaviour
             return;
         }
 
-        HandleTowerClick();
+        /* HandleTowerClick(); */
 
         if (!enable)
         {
@@ -368,10 +368,7 @@ public class towerCommon : MonoBehaviour
         currentGrid.Tower = gameObject;
         
         BattleController.Instance.UpdateMoney(-towerData.cost);
-        BattleController.Instance.GetTowerComboControl().CheckCombo(this);
-
-
-        
+        /* BattleController.Instance.GetTowerComboControl().CheckCombo(this); */
 
         // 获取主Canvas引用
         mainCanvas = GameObject.FindObjectOfType<Canvas>();
@@ -398,7 +395,19 @@ public class towerCommon : MonoBehaviour
     {
         if (skillComponent != null)
         {
-            skillComponent.CastSkill();
+            // 检查是否有管理器
+            if (SkillCutsceneManager.Instance != null)
+            {
+                // 播放特写，结束后再实际释放技能
+                SkillCutsceneManager.Instance.PlaySkillCutscene(towerData, transform.position, () => {
+                    skillComponent.CastSkill();
+                });
+            }
+            else
+            {
+                // 没有管理器就直接释放技能
+                skillComponent.CastSkill();
+            }
         }
     }
 
@@ -421,6 +430,7 @@ public class towerCommon : MonoBehaviour
     }
 
 #region 防御塔面板
+/*
     private bool CheckMouseHit()
     {
         // 获取鼠标在世界坐标中的位置
@@ -576,87 +586,11 @@ public class towerCommon : MonoBehaviour
             EnterCombineMode();
         }
     }
-
-    // 进入组合模式
-    private void EnterCombineMode()
-    {
-        // 通知TowerComboControl进入组合模式
-        BattleController.Instance.GetTowerComboControl().CheckCombo(this);
-    }
-
-    // 显示加入组确认面板
-    private void ShowJoinGroupConfirmPanel(TowerComboGroup group)
-    {
-        if (currentCombineConfirmPanel != null) return;
-        
-        // 设置面板位置为鼠标位置
-        Vector3 mousePosition = Input.mousePosition;
-        currentCombineConfirmPanel = Instantiate(towerCombineConfirmPanel, mainCanvas.transform);
-        currentCombineConfirmPanel.transform.position = mousePosition;
-
-        // 设置确认和取消按钮的事件
-        Button confirmBtn = currentPanel.transform.Find("ConfirmButton").GetComponent<Button>();
-        Button cancelBtn = currentPanel.transform.Find("CancelButton").GetComponent<Button>();
-
-        confirmBtn.onClick.AddListener(() => {
-            BattleController.Instance.GetTowerComboControl().AddTowerIntoHoverGroup(this);
-            HideTowerPanel();
-        });
-
-        cancelBtn.onClick.AddListener(() => {
-            HideTowerPanel();
-        });
-    }
-
-    // 显示退出组确认面板
-    private void ShowLeaveGroupConfirmPanel()
-    {
-        if (currentPanel != null) return;
-
-        currentPanel = Instantiate(towerCombineConfirmPanel, mainCanvas.transform);
-        RectTransform rectTransform = currentPanel.GetComponent<RectTransform>();
-        
-        // 设置面板位置为鼠标位置
-        Vector2 mousePosition = Input.mousePosition;
-        rectTransform.position = mousePosition;
-
-        // 设置确认和取消按钮的事件
-        Button confirmBtn = currentPanel.transform.Find("ConfirmButton").GetComponent<Button>();
-        Button cancelBtn = currentPanel.transform.Find("CancelButton").GetComponent<Button>();
-
-        confirmBtn.onClick.AddListener(() => {
-            BattleController.Instance.GetTowerComboControl().RemoveTowerFromHoverGroup(this);
-            HideTowerPanel();
-        });
-
-        cancelBtn.onClick.AddListener(() => {
-            HideTowerPanel();
-        });
-    }
-
-    // 设置防御塔状态
-    public void SetComboState(TowerComboState state)
-    {
-        comboState = state;
-        switch (state)
-        {
-            case TowerComboState.Normal:
-                SetHighlight(false);
-                break;
-            case TowerComboState.Selecting:
-                SetHighlight(true);
-                break;
-            case TowerComboState.BeingSelected:
-                SetHighlight(false);
-                break;
-            case TowerComboState.InGroup:
-                // 可以设置特殊效果
-                break;
-        }
-    }
+*/
 #endregion
 
 #region 防御塔联动
+/*
     public void SetHighlight(bool highlight)
     {
         if (highlight)
@@ -791,6 +725,85 @@ public class towerCommon : MonoBehaviour
     {
         return new Vector2Int(-direction.x, -direction.y);
     }
+
+    // 进入组合模式
+    private void EnterCombineMode()
+    {
+        // 通知TowerComboControl进入组合模式
+        BattleController.Instance.GetTowerComboControl().CheckCombo(this);
+    }
+
+    // 显示加入组确认面板
+    private void ShowJoinGroupConfirmPanel(TowerComboGroup group)
+    {
+        if (currentCombineConfirmPanel != null) return;
+        
+        // 设置面板位置为鼠标位置
+        Vector3 mousePosition = Input.mousePosition;
+        currentCombineConfirmPanel = Instantiate(towerCombineConfirmPanel, mainCanvas.transform);
+        currentCombineConfirmPanel.transform.position = mousePosition;
+
+        // 设置确认和取消按钮的事件
+        Button confirmBtn = currentPanel.transform.Find("ConfirmButton").GetComponent<Button>();
+        Button cancelBtn = currentPanel.transform.Find("CancelButton").GetComponent<Button>();
+
+        confirmBtn.onClick.AddListener(() => {
+            BattleController.Instance.GetTowerComboControl().AddTowerIntoHoverGroup(this);
+            HideTowerPanel();
+        });
+
+        cancelBtn.onClick.AddListener(() => {
+            HideTowerPanel();
+        });
+    }
+
+    // 显示退出组确认面板
+    private void ShowLeaveGroupConfirmPanel()
+    {
+        if (currentPanel != null) return;
+
+        currentPanel = Instantiate(towerCombineConfirmPanel, mainCanvas.transform);
+        RectTransform rectTransform = currentPanel.GetComponent<RectTransform>();
+        
+        // 设置面板位置为鼠标位置
+        Vector2 mousePosition = Input.mousePosition;
+        rectTransform.position = mousePosition;
+
+        // 设置确认和取消按钮的事件
+        Button confirmBtn = currentPanel.transform.Find("ConfirmButton").GetComponent<Button>();
+        Button cancelBtn = currentPanel.transform.Find("CancelButton").GetComponent<Button>();
+
+        confirmBtn.onClick.AddListener(() => {
+            BattleController.Instance.GetTowerComboControl().RemoveTowerFromHoverGroup(this);
+            HideTowerPanel();
+        });
+
+        cancelBtn.onClick.AddListener(() => {
+            HideTowerPanel();
+        });
+    }
+
+    // 设置防御塔状态
+    public void SetComboState(TowerComboState state)
+    {
+        comboState = state;
+        switch (state)
+        {
+            case TowerComboState.Normal:
+                SetHighlight(false);
+                break;
+            case TowerComboState.Selecting:
+                SetHighlight(true);
+                break;
+            case TowerComboState.BeingSelected:
+                SetHighlight(false);
+                break;
+            case TowerComboState.InGroup:
+                // 可以设置特殊效果
+                break;
+        }
+    }
+*/
 #endregion
 
     private void OnMouseOver()

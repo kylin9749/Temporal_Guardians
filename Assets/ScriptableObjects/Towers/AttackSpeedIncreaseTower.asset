@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   towerName: AttackSpeedIncreaseTower
   towerType: 2
+  towerColor: 0
   bulletSpeed: 5
   skillCastTime: 3
   damage: 5
@@ -26,3 +27,4 @@ MonoBehaviour:
   skillType: 2
   skillDamage: 50
   skillRange: 5
+  skillName: 333

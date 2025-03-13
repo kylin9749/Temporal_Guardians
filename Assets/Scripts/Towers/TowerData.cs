@@ -20,5 +20,7 @@ public class TowerData : ScriptableObject
     public TowerSkillType skillType;             // 当前防御塔的技能类型
     public float skillDamage = 50f;
     public float skillRange = 5f;
+    public string skillName;        // 技能名称
+
     // ... 其他技能相关参数 ...
 }
