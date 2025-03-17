@@ -4,6 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public class towerCommon : MonoBehaviour
 {
@@ -233,7 +234,8 @@ public class towerCommon : MonoBehaviour
             return;
         }
 
-        /* HandleTowerClick(); */
+        // 检测防御塔信息面板的点击事件
+        CheckTowerInfoPanelInput();
 
         if (!enable)
         {
@@ -428,6 +430,128 @@ public class towerCommon : MonoBehaviour
     {
         enemyList = enemies;
     }
+
+#region 防御塔信息面板
+    [SerializeField] private GameObject towerInfoPanelPrefab; // 在Inspector中指定面板预制体
+    private GameObject currentInfoPanel; // 当前实例化的信息面板
+    // 将这些变量改为GameObject类型
+
+    // 处理防御塔点击事件
+    private void HandleTowerClick()
+    {
+        // 如果不在设置塔状态，则返回
+        if (!isSettingTower) return;
+        
+        // 如果鼠标左键被按下
+        if (Input.GetMouseButtonDown(0))
+        {
+            // 如果鼠标指针在UI上，则返回
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+
+            // 获取鼠标位置
+            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            // 检测点击
+            Collider2D hitCollider = Physics2D.OverlapPoint(mousePosition);
+
+            // 如果点击到了防御塔
+            if (hitCollider != null && hitCollider.gameObject == gameObject)
+            {
+                ShowTowerInfoPanel();
+            }
+            else
+            {
+                HideTowerInfoPanel();
+            }
+        }
+    }
+
+    // 显示防御塔信息面板
+    private void ShowTowerInfoPanel()
+    {
+        // 如果面板已经存在，直接返回
+        if (currentInfoPanel != null) return;
+        
+        // 确保有Canvas引用
+        if (mainCanvas == null)
+        {
+            mainCanvas = GameObject.FindObjectOfType<Canvas>();
+            if (mainCanvas == null)
+            {
+                Debug.LogError("找不到主Canvas!");
+                return;
+            }
+        }
+
+        // 实例化信息面板
+        currentInfoPanel = Instantiate(towerInfoPanelPrefab, mainCanvas.transform);
+        
+        // 填充防御塔信息
+        FillTowerInfo(currentInfoPanel);
+    }
+
+    // 填充防御塔信息到面板
+    private void FillTowerInfo(GameObject panel)
+    {
+        if (panel == null || towerData == null) return;
+
+        // 通过Find查找并获取组件
+        TextMeshProUGUI nameText = panel.transform.Find("NameText").GetComponent<TextMeshProUGUI>();
+        Image iconImage = panel.transform.Find("IconImage").GetComponent<Image>();
+        TextMeshProUGUI damageText = panel.transform.Find("DamageText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI attackSpeedText = panel.transform.Find("AttackSpeedText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI mpText = panel.transform.Find("MpText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI rangeText = panel.transform.Find("RangeText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI costText = panel.transform.Find("CostText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI skillNameText = panel.transform.Find("SkillNameText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI skillDescText = panel.transform.Find("SkillDescText").GetComponent<TextMeshProUGUI>();
+        
+        // 设置防御塔名称
+        nameText.text = towerData.towerName;
+        
+        // 设置防御塔图标
+        iconImage.sprite = towerData.towerSprite;
+        
+        // 设置攻击伤害
+        damageText.text = "Damage: " + towerData.damage;
+        
+        // 设置攻击速度
+        attackSpeedText.text = "Attack Speed: " + towerData.attackSpeed;
+        
+        // 设置总蓝量
+        mpText.text = "Total MP: " + towerData.totalMp;
+        
+        // 设置攻击范围
+        rangeText.text = "Attack Range: " + towerData.attackRange;
+        
+        // 设置建造费用
+        costText.text = "Cost: " + towerData.cost;  
+        
+        // 设置技能名称
+        skillNameText.text = "Skill: " + towerData.skillName;
+        
+        // 设置技能描述
+        skillDescText.text = towerData.skillDescription;
+    }
+
+    // 隐藏防御塔信息面板
+    private void HideTowerInfoPanel()
+    {
+        if (currentInfoPanel != null)
+        {
+            Destroy(currentInfoPanel);
+            currentInfoPanel = null;
+        }
+    }
+
+    // 在Update中调用处理点击事件的方法
+    public void CheckTowerInfoPanelInput()
+    {
+        HandleTowerClick();
+    }
+#endregion
 
 #region 防御塔面板
 /*

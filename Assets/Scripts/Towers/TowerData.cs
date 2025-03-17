@@ -21,6 +21,7 @@ public class TowerData : ScriptableObject
     public float skillDamage = 50f;
     public float skillRange = 5f;
     public string skillName;        // 技能名称
+    public string skillDescription; // 技能描述
 
     // ... 其他技能相关参数 ...
 }

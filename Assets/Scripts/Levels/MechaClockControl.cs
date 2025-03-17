@@ -61,9 +61,9 @@ public class MechaClockControl : MonoBehaviour
 
         //设置时针对象中的gameobject的size
         GameObject minuteHandSpriteObject = minuteHand.transform.Find("MinuteHandSprite").gameObject;
-        minuteHandSpriteObject.transform.localScale = new Vector3(2f, minuteHandLength, 0f);
+        minuteHandSpriteObject.transform.localScale = new Vector3(1f, minuteHandLength, 0f);
         GameObject hourHandSpriteObject = hourHand.transform.Find("HourHandSprite").gameObject;
-        hourHandSpriteObject.transform.localScale = new Vector3(2f, hourHandLength, 0f);
+        hourHandSpriteObject.transform.localScale = new Vector3(1f, hourHandLength, 0f);
 
         // 设置时针和分针的位置
         minuteHandSpriteObject.transform.localPosition = new Vector3(0f, minuteHandLength / 2f, 0f);
