@@ -46,6 +46,6 @@ public class ChapterController : MonoBehaviour
 
     public void OnBackButtonClick()
     {
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene("MainScene");
     }
 }

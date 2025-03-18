@@ -57,19 +57,4 @@ public class PauseMenuUI : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
-
-    public void ResumeGame()
-    {
-        // 调用BattleController的暂停切换方法
-        BattleController.Instance.TogglePause();
-    }
-
-    public void ReturnToMainMenu()
-    {
-        // 在切换场景前恢复正常时间流速
-        Time.timeScale = 1f;
-        
-        // 加载主菜单场景
-        SceneManager.LoadScene("LevelScene"); // 这里使用你的关卡选择场景名称
-    }
 }

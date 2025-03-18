@@ -26,7 +26,7 @@ public class SplitRoadSkill : TowerSkillCommon
     private void SplitTile(Vector2Int tile)
     {
         // 实现劈开格子的逻辑
-        tower.CurrentGrid.GetGridFromVector2Int(tile).IsBlocked = true;
+        //tower.GetGridFromVector2Int(tile).IsBlocked = true;
     }
 
     private IEnumerator BlockTileForDuration(Vector2Int tile, float duration)

@@ -219,36 +219,59 @@ public class MapMaker : MonoBehaviour
         return nearestGrid;
     }
 
-    public MapGrid[] GetAdjacentBases(MapGrid baseGrid)
+    // 获取相邻格子
+    public List<MapGrid> GetNeighborGrids(MapGrid baseGrid)
     {
-        List<MapGrid> adjacentBases = new List<MapGrid>();
-        Vector2Int pos = new Vector2Int(baseGrid.X, baseGrid.Y);
+        List<MapGrid> neighbors = new List<MapGrid>();
+        // 上下左右四个方向
+        int[] dx = {0, 0, -1, 1};
+        int[] dy = {-1, 1, 0, 0};
 
-        // 检查上下左右相邻的格子
-        Vector2Int[] directions = new Vector2Int[] {
-            new Vector2Int(0, 2),  // 上
-            new Vector2Int(0, -2), // 下 
-            new Vector2Int(-2, 0), // 左
-            new Vector2Int(2, 0)   // 右
-        };
-
-        foreach (Vector2Int dir in directions)
+        for (int i = 0; i < 4; i++)
         {
-            int newX = pos.x + dir.x;
-            int newY = pos.y + dir.y;
-
-            // 检查新坐标是否在地图范围内
-            if (newX >= 0 && newX < xColumn && newY >= 0 && newY < yRow)
+            int newX = baseGrid.X + dx[i];
+            int newY = baseGrid.Y + dy[i];
+            
+            // 检查边界
+            if (newX >= 0 && newX < xColumn &&
+                newY >= 0 && newY < yRow)
             {
-                // 如果相邻格子是base类型,添加到列表
-                if (gridObjects[newX, newY].Type == GridType.Base)
-                {
-                    adjacentBases.Add(gridObjects[newX, newY]);
-                }
+                // Debug.Log("newX = " + newX + ", newY = " + newY);
+                neighbors.Add(gridObjects[newX, newY]);
             }
         }
+        return neighbors;
+    }
 
-        return adjacentBases.ToArray();
+    public List<MapGrid> GetNeighborBaseGrids(MapGrid baseGrid)
+    {
+        // 获取防御塔基台的相邻格子
+        if (baseGrid.Type != GridType.Base)
+        {
+            Debug.LogError("当前格子不是防御塔基台!");
+            return null;
+        }
+
+        // 上下左右四个方向
+        List<MapGrid> neighbors = new List<MapGrid>();
+        // 上下左右四个方向
+        int[] dx = {0, 0, -2, 2};
+        int[] dy = {-2, 2, 0, 0};
+
+        for (int i = 0; i < 4; i++)
+        {
+            int newX = baseGrid.X + dx[i];
+            int newY = baseGrid.Y + dy[i];
+            
+            // 检查边界
+            if (newX >= 0 && newX < xColumn &&
+                newY >= 0 && newY < yRow)
+            {
+                // Debug.Log("newX = " + newX + ", newY = " + newY);
+                neighbors.Add(gridObjects[newX, newY]);
+            }
+        }
+        return neighbors;
     }
 
     /// <summary>
@@ -270,7 +293,7 @@ public class MapMaker : MonoBehaviour
                 }
             }
         }
-        
+
         // 清理出生点列表
         if (spawnPoints != null)
         {
@@ -282,6 +305,22 @@ public class MapMaker : MonoBehaviour
         
         // 清理地图上的所有特效和临时游戏对象
         CleanupMapEffects();
+
+        // 清理所有的格子对象
+        if (gridObjects != null)
+        {
+            for (int x = 0; x < xColumn; x++)
+            {
+                for (int y = 0; y < yRow; y++)
+                {
+                    if (gridObjects[x, y] != null)
+                    {
+                        Destroy(gridObjects[x, y].gameObject);
+                    }
+                }
+            }
+            gridObjects = null;
+        }
     }
 
     /// <summary>

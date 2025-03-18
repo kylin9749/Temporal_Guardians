@@ -18,13 +18,10 @@ public class BattleController : MonoBehaviour
     private bool isEndGame = false;
     private int currentMoney;
     private int currentHealth;
-    public static BattleController Instance;
     private string currentLevel;
     private int enemyNumber = 0;
     private MechaClockControl mechaClockControl;
     private DigitalClockControl digitalClockControl;
-    private bool isPaused = false;
-
     public GameObject endGameUI;
     public TextMeshProUGUI endGameUIString;
     public GameObject MechaClockLevel;
@@ -38,7 +35,7 @@ public class BattleController : MonoBehaviour
 
     void Awake()
     {
-        Instance = this;
+
     }
 
     void Start()
@@ -88,14 +85,13 @@ public class BattleController : MonoBehaviour
         {
             MechaClockLevel.SetActive(true);
             mechaClockControl = MechaClockLevel.GetComponent<MechaClockControl>();
-            mechaClockControl.SetClockActive(false);
-            
+            mechaClockControl.Initialize(this);
         }
         else if (chapterConfig.chapterType == ChapterType.DigitalClock)
         {
             DigitalClockLevel.SetActive(true);
             digitalClockControl = DigitalClockLevel.GetComponent<DigitalClockControl>();
-            digitalClockControl.SetClockActive(false);
+            digitalClockControl.Initialize(this);
         }
 
         // 加载关卡配置
@@ -223,7 +219,7 @@ public class BattleController : MonoBehaviour
 
             // 在指定出生点生成敌人
             GameObject enemy = EnemyFactory.Instance.CreateEnemy(enemyInfo.enemyType,
-                mapMaker.spawnPoints[enemyInfo.spawnPoint].transform.position);
+                mapMaker.spawnPoints[enemyInfo.spawnPoint].transform.position, this);
             
             if (mapMaker.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint != null)
             {
@@ -314,7 +310,7 @@ public class BattleController : MonoBehaviour
             return;
         }
         */
-        GameObject tower = TowerFactory.Instance.CreateTower(towerType, GetMousePosition());
+        GameObject tower = TowerFactory.Instance.CreateTower(towerType, GetMousePosition(), this);
     }
 
     public void createTower1()
@@ -371,13 +367,10 @@ public class BattleController : MonoBehaviour
         SceneManager.LoadScene("LevelScene");
     }
 
-    private void CleanupBeforeSceneChange()
+    public void CleanupBeforeSceneChange()
     {
         // 停止所有协程
         StopAllCoroutines();
-    
-        // 重置静态实例
-        Instance = null;
         
         // 清理时钟资源
         if (mechaClockControl != null)
@@ -389,7 +382,7 @@ public class BattleController : MonoBehaviour
         {
             digitalClockControl.CleanupResources();
         }
-        
+
         // 清理敌人和防御塔资源
         if (mapMaker != null)
         {
@@ -401,7 +394,6 @@ public class BattleController : MonoBehaviour
         isWaveActive = false;
         isEndGame = false;
         enemyNumber = 0;
-        isPaused = false;
         
         // 恢复正常时间流速（如果暂停状态）
         Time.timeScale = 1f;
@@ -417,11 +409,6 @@ public class BattleController : MonoBehaviour
         return mapMaker;
     }
 
-    public void OnClickPause()
-    {
-        TogglePause();
-    }
-
     /*
     public TowerComboControl GetTowerComboControl()
     {
@@ -429,39 +416,4 @@ public class BattleController : MonoBehaviour
     }
     */
 
-    public void TogglePause()
-    {
-        isPaused = !isPaused;
-        Time.timeScale = isPaused ? 0f : 1f;
-        
-        // 可以在这里触发UI显示
-        if (isPaused)
-        {
-            ShowPauseMenu();
-        }
-        else
-        {
-            HidePauseMenu();
-        }
-    }
-    private void ShowPauseMenu()
-    {
-        if (pauseMenuUI != null)
-        {
-            pauseMenuUI.Show();
-        }
-    }
-    
-    private void HidePauseMenu()
-    {
-        if (pauseMenuUI != null)
-        {
-            pauseMenuUI.Hide();
-        }
-    }
-    
-    public bool IsPaused
-    {
-        get { return isPaused; }
-    }
 }

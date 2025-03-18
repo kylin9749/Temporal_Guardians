@@ -29,7 +29,7 @@ public class EnemyFactory : MonoBehaviour
     }
 
     // 统一的创建接口，隐藏了复杂的创建过程
-    public GameObject CreateEnemy(EnemyType type, Vector3 position)
+    public GameObject CreateEnemy(EnemyType type, Vector3 position, BattleController battleController)
     {
         var config = System.Array.Find(enemyConfigs, x => x.enemyType == type);
         if (config != null)
@@ -37,7 +37,7 @@ public class EnemyFactory : MonoBehaviour
             // 封装所有创建逻辑
             var enemy = Instantiate(enemyBasePrefab, position, Quaternion.identity);
             if(enemy != null)   
-                enemy.GetComponent<EnemyCommon>().InitializeEnemy(config);
+                enemy.GetComponent<EnemyCommon>().InitializeEnemy(config, battleController);
             else
                 Debug.LogError("EnemyCommon component not found on enemyBasePrefab");
             

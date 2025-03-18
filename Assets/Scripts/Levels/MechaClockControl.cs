@@ -17,12 +17,13 @@ public class MechaClockControl : MonoBehaviour
     private float startHourAngle;
     private float startHours;
     private float startMinutes;
-
+    private BattleController battleController;
     // 添加新的变量来存储重叠的防御塔
     private List<towerCommon> overlappingTowers = new List<towerCommon>();
     
-    void Start()
+    public void Initialize(BattleController controller)
     {
+        battleController = controller;
         // 调用方法更新时钟指针的大小
         UpdateClockHandsSize();
 
@@ -43,6 +44,9 @@ public class MechaClockControl : MonoBehaviour
         SetupCollider(minuteHand);
         SetupCollider(hourHand);
 
+        // 设置时钟为不活动状态
+        isClockActive = false;
+
         // 启动协程
         StartCoroutine(UpdateClockHands());
     }
@@ -50,8 +54,8 @@ public class MechaClockControl : MonoBehaviour
     private void UpdateClockHandsSize()
     {
         //从battleController中获取地图大小
-        int x = BattleController.Instance.GetMapMaker().XColumn;
-        int y = BattleController.Instance.GetMapMaker().YRow;
+        int x = battleController.GetMapMaker().XColumn;
+        int y = battleController.GetMapMaker().YRow;
 
         // 先取较小的一个值的一半作为分针的半径
         float minuteHandLength = Mathf.Min(x, y) / 2f;
@@ -237,6 +241,10 @@ public class MechaClockControl : MonoBehaviour
     
         // 重置状态
         isClockActive = false;
+
+        // 销毁时钟对象
+        Destroy(minuteHand);
+        Destroy(hourHand);
     }
     private void OnDestroy()
     {

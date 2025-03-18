@@ -102,15 +102,21 @@ public class DigitalClockControl : MonoBehaviour
     private int[] currentDigits = new int[4]; // 当前显示的数字
     private Dictionary<Vector2Int, List<GameObject>> digitTowers; // 记录每个位置的防御塔
 
-    void Start()
+    private BattleController battleController;
+
+    public void Initialize(BattleController controller)
     {
+        battleController = controller;
         digitTowers = new Dictionary<Vector2Int, List<GameObject>>();
-        UpdateDisplay(startTime.Hour, startTime.Minute);
+
+        // 设置时钟为不活动状态
+        isClockActive = false;
+
         StartCoroutine(UpdateClock());
 
         //始终显示电子表中间的两个点
-        BattleController.Instance.GetMapMaker().GridObjects[14, 4].transform.Find("DigitalClockShandow").gameObject.SetActive(true);
-        BattleController.Instance.GetMapMaker().GridObjects[14, 8].transform.Find("DigitalClockShandow").gameObject.SetActive(true);
+        battleController.GetMapMaker().GridObjects[14, 4].transform.Find("DigitalClockShandow").gameObject.SetActive(true);
+        battleController.GetMapMaker().GridObjects[14, 8].transform.Find("DigitalClockShandow").gameObject.SetActive(true);
     }
 
     public void SetClockTime(float timeInSeconds)
@@ -141,17 +147,18 @@ public class DigitalClockControl : MonoBehaviour
     IEnumerator UpdateClock()
     {
         while (true)
-        {
-            UpdateDisplay(startTime.Hour, startTime.Minute);
+        {            
             yield return new WaitForSeconds(2f);   // 每2秒更新一次,相当于走过了1分钟
-            startTime = startTime.AddMinutes(1);   // 每次更新增加1分钟
+            if (isClockActive)
+            {
+                UpdateDisplay(startTime.Hour, startTime.Minute);
+                startTime = startTime.AddMinutes(1);   // 每次更新增加1分钟
+            }
         }
     }
 
     void UpdateDisplay(int hour, int minute)
     {
-        if (!isClockActive) return;
-
         currentDigits[0] = hour / 10;
         currentDigits[1] = hour % 10;
         currentDigits[2] = minute / 10;
@@ -187,7 +194,7 @@ public class DigitalClockControl : MonoBehaviour
         int startX = digitPositions[position, 0];
         int startY = digitPositions[position, 1];
 
-        MapGrid grid = BattleController.Instance.GetMapMaker().GridObjects[gridPos.x, gridPos.y];
+        MapGrid grid = battleController.GetMapMaker().GridObjects[gridPos.x, gridPos.y];
         if (grid == null) return;
         if (grid.Tower == null) return;
 
@@ -212,7 +219,7 @@ public class DigitalClockControl : MonoBehaviour
 
     void UpdateGridForDigitalClock(int position, Vector2Int gridPos, bool active)
     {
-        BattleController.Instance.GetMapMaker().GridObjects[gridPos.x, gridPos.y]
+        battleController.GetMapMaker().GridObjects[gridPos.x, gridPos.y]
             .DigitalClockShandow.SetActive(active);
     }
 

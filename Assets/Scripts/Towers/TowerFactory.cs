@@ -37,7 +37,7 @@ public class TowerFactory : MonoBehaviour
     }
 
     // 统一的创建接口，隐藏了复杂的创建过程
-    public GameObject CreateTower(TowerType type, Vector3 position)
+    public GameObject CreateTower(TowerType type, Vector3 position, BattleController controller)
     {
         var config = System.Array.Find(towerConfigs, x => x.towerType == type);
         if (config != null)
@@ -45,7 +45,7 @@ public class TowerFactory : MonoBehaviour
             // 封装所有创建逻辑
             var tower = Instantiate(towerBasePrefab, position, Quaternion.identity);
             if(tower != null)   
-                tower.GetComponent<towerCommon>().InitializeTower(config);
+                tower.GetComponent<towerCommon>().InitializeTower(config, controller);
             else
                 Debug.LogError("towerCommon component not found on towerBasePrefab");
             

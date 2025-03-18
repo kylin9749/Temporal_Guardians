@@ -47,12 +47,9 @@ public class towerCommon : MonoBehaviour
     private GameObject currentPanel; // 当前实例化的面板
     private GameObject currentCombineConfirmPanel;
     private Canvas mainCanvas; // 主Canvas的引用
-    private TowerComboState comboState = TowerComboState.Normal;
-    private TowerComboGroup currentGroup;
     private Dictionary<string, GameObject> connectionSprites;
-    private bool isMouseOver = false;
-
-    public void InitializeTower(TowerData data)
+    private BattleController battleController;
+    public void InitializeTower(TowerData data, BattleController controller)
     {
         // 初始化状态
         currentMp = 0;
@@ -61,6 +58,7 @@ public class towerCommon : MonoBehaviour
         
         // 保存数据引用
         towerData = data;
+        battleController = controller;
 
         // 移除现有的技能组件（如果有）
         var oldSkill = GetComponent<TowerSkillCommon>();
@@ -296,7 +294,7 @@ public class towerCommon : MonoBehaviour
     // 更新防御塔预览位置和显示
     private void UpdateTowerPreview()
     {
-        nearestBase = BattleController.Instance.GetMapMaker().GetNearestBase(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        nearestBase = battleController.GetMapMaker().GetNearestBase(Camera.main.ScreenToWorldPoint(Input.mousePosition));
         if (nearestBase != null && lastNearestBase != nearestBase)
         {
             transform.position = nearestBase.transform.position;
@@ -332,7 +330,7 @@ public class towerCommon : MonoBehaviour
     // 检查是否有足够的金钱
     private bool CanAffordTower()
     {
-        return BattleController.Instance.GetMoney() >= towerData.cost;
+        return battleController.GetMoney() >= towerData.cost;
     }
 
     // 检查格子是否被占用
@@ -369,7 +367,7 @@ public class towerCommon : MonoBehaviour
         currentGrid = nearestBase;
         currentGrid.Tower = gameObject;
         
-        BattleController.Instance.UpdateMoney(-towerData.cost);
+        battleController.UpdateMoney(-towerData.cost);
         /* BattleController.Instance.GetTowerComboControl().CheckCombo(this); */
 
         // 获取主Canvas引用
@@ -994,5 +992,11 @@ public class towerCommon : MonoBehaviour
     {
         get { return dmageIncreaseFactor; }
         set { dmageIncreaseFactor = value; }
+    }
+
+    public BattleController BattleController
+    {
+        get { return battleController; }
+        set { battleController = value; }
     }
 }

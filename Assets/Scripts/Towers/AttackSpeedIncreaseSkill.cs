@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class AttackSpeedIncreaseSkill : TowerSkillCommon
 {
-    MapGrid[] adjacentBases;
+    List<MapGrid> adjacentBases;
     public override void CastSkill()
     {
         MapGrid baseGrid = tower.CurrentGrid;
-        adjacentBases = BattleController.Instance.GetMapMaker().GetAdjacentBases(baseGrid);
+        adjacentBases = tower.BattleController.GetMapMaker().GetNeighborBaseGrids(baseGrid);
 
         foreach (MapGrid grid in adjacentBases)
         {

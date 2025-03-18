@@ -51,9 +51,6 @@ public class SkillCutsceneManager : MonoBehaviour
         isPlaying = true;
         lastCutsceneTime = Time.time;
         
-        // 暂停游戏
-        Time.timeScale = 0f;
-        
         // 找到主Canvas（或创建一个）
         Canvas mainCanvas = FindObjectOfType<Canvas>();
         if (mainCanvas == null)
@@ -71,7 +68,6 @@ public class SkillCutsceneManager : MonoBehaviour
         {
             Debug.LogError("预制体上没有找到 TowerSkillCutscene 组件！");
             Destroy(currentCutscene);
-            Time.timeScale = 1f;
             isPlaying = false;
             onComplete?.Invoke();
             yield break;
@@ -124,7 +120,6 @@ public class SkillCutsceneManager : MonoBehaviour
         }
         
         // 恢复游戏
-        Time.timeScale = 1f;
         isPlaying = false;
         
         // 回调

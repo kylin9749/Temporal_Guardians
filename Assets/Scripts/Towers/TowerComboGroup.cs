@@ -3,7 +3,6 @@ using System.Collections.Generic;
 public class TowerComboGroup
 {
     private List<towerCommon> towers = new List<towerCommon>();
-    private TowerComboType comboType = TowerComboType.None;
     public void AddTower(towerCommon tower)
     {
         if (!towers.Contains(tower))
@@ -60,7 +59,6 @@ public class TowerComboGroup
             tower.DmageIncreaseFactor = 0;
         }
         towers.Clear();
-        comboType = TowerComboType.None;
     }
 
     public bool ContainsTower(towerCommon tower)

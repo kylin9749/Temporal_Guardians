@@ -19,16 +19,20 @@ public class EnemyCommon : MonoBehaviour
     private bool isDead = false;
     private EnemySkillCommon skillComponent;
     private float distanceToCenter;
+    private BattleController battleController;
 
-    public void InitializeEnemy(EnemyData data)
+    public void InitializeEnemy(EnemyData data, BattleController controller)
     {
         // 初始化状态
         currentHealth = data.maxHealth;
         currentMoveSpeed = data.originalMoveSpeed;
-        
+
         // 保存数据引用
         enemyData = data;
-
+        
+        // 保存战斗控制器引用
+        battleController = controller;
+        
         // 移除现有的技能组件（如果有）
         var oldSkill = GetComponent<EnemySkillCommon>();
         if (oldSkill != null)
@@ -103,7 +107,7 @@ public class EnemyCommon : MonoBehaviour
         currentHealth = enemyData.maxHealth;
         currentMoveSpeed = enemyData.originalMoveSpeed;
 
-        mapMaker = BattleController.Instance.GetMapMaker();
+        mapMaker = battleController.GetMapMaker();
     }
 
     // Update is called once per frame
@@ -162,7 +166,7 @@ public class EnemyCommon : MonoBehaviour
         }
 
         List<MapGrid> validNeighbors = new List<MapGrid>();
-        foreach (MapGrid neighbor in currentGrid.GetNeighborGrids())
+        foreach (MapGrid neighbor in mapMaker.GetNeighborGrids(currentGrid))
         {
             if (mapMaker.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center)
             {
@@ -316,7 +320,7 @@ public class EnemyCommon : MonoBehaviour
             }
 
             // 遍历相邻格子
-            foreach (MapGrid neighbor in current.GetNeighborGrids())
+            foreach (MapGrid neighbor in mapMaker.GetNeighborGrids(current))
             {
                 // 只考虑可行走的格子（Road或Center类型）
                 if ((mapMaker.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center) 
@@ -348,14 +352,14 @@ public class EnemyCommon : MonoBehaviour
         if(isEnemyWin)
         {
             //怪物获胜，减少生命值
-            BattleController.Instance.UpdateHealth(-1);
+            battleController.UpdateHealth(-1);
         }
         else
         {
             //玩家获胜，增加金币
-            BattleController.Instance.UpdateMoney(enemyData.coinsDrop);
+            battleController.UpdateMoney(enemyData.coinsDrop);
         }
-        BattleController.Instance.UpdateEnemyNumber(-1);
+        battleController.UpdateEnemyNumber(-1);
         Destroy(gameObject);
     }
 
