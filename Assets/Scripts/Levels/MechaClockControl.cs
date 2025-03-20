@@ -243,8 +243,7 @@ public class MechaClockControl : MonoBehaviour
         isClockActive = false;
 
         // 销毁时钟对象
-        Destroy(minuteHand);
-        Destroy(hourHand);
+        Destroy(this.gameObject);
     }
     private void OnDestroy()
     {

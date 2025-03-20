@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8530221033693775384}
   - component: {fileID: 7166993577156927007}
   - component: {fileID: 5563585656740859723}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: tower
   m_TagString: towers
   m_Icon: {fileID: 0}
@@ -114,15 +114,6 @@ MonoBehaviour:
   comboTransform: {fileID: 7614404504489242275}
   towerPanel: {fileID: 452379480417049598, guid: a31b9ae3658993741a53c8e23e71f23a, type: 3}
   towerInfoPanelPrefab: {fileID: 4740788907171849994, guid: 150272749ab2b31488b74c0a314a6fca, type: 3}
-  towerNameText: {fileID: 0}
-  towerDamageText: {fileID: 0}
-  towerAttackSpeedText: {fileID: 0}
-  towerTotalMpText: {fileID: 0}
-  towerAttackRangeText: {fileID: 0}
-  towerCostText: {fileID: 0}
-  towerSkillNameText: {fileID: 0}
-  towerSkillDescText: {fileID: 0}
-  towerIconImage: {fileID: 0}
 --- !u!58 &7166993577156927007
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -195,7 +186,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4811382041163923395}
   - component: {fileID: 4225471244859217174}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: South
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -279,7 +270,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5057597780127786532}
   - component: {fileID: 534858156397098152}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: West
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -362,7 +353,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7614404504489242275}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Combo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -402,7 +393,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4785141267978978244}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: mpbar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -436,7 +427,7 @@ GameObject:
   - component: {fileID: 1946836163637542005}
   - component: {fileID: 7228566225179442226}
   - component: {fileID: 7545403116102145866}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: AttackRangeController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -520,7 +511,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5781482248646638609}
   - component: {fileID: 6865986325283215494}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: North
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -604,7 +595,7 @@ GameObject:
   m_Component:
   - component: {fileID: 570800206995178101}
   - component: {fileID: 7492715960743665288}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: East
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -688,7 +679,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5908937949275638031}
   - component: {fileID: 540369664154271276}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Shadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -772,7 +763,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3232574552937374225}
   - component: {fileID: 4005130501388381661}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BarImg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -856,7 +847,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7618343763029898473}
   - component: {fileID: 1086777415521991311}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Highlight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -940,7 +931,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6093358595325276}
   - component: {fileID: 7286443154717868627}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Northwest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1024,7 +1015,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4859141616684949455}
   - component: {fileID: 3014584364795289468}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: ComboBubble
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1108,7 +1099,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1165755352881388855}
   - component: {fileID: 8227549718713194849}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Southwest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1192,7 +1183,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4712563823962218887}
   - component: {fileID: 5086940783453745071}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: AttackRangeImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1276,7 +1267,7 @@ GameObject:
   m_Component:
   - component: {fileID: 666999385725012963}
   - component: {fileID: 2730946253239737494}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Southeast
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1360,7 +1351,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8487289734485984658}
   - component: {fileID: 4850065967851233129}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Northeast
   m_TagString: Untagged
   m_Icon: {fileID: 0}

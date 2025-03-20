@@ -16,11 +16,13 @@ public class DebugLevelControl : MonoBehaviour
         MechaClock = 1 << 4,
         DigitalClock = 1 << 5,
         TowerCombo = 1 << 6,
+        TowerZone = 1 << 7,
+        TowerPanel = 1 << 8,
         // 可以继续添加更多模块...
     }
 
     // 当前启用的调试模块
-    private static DebugModule activeModules = DebugModule.TowerCombo;
+    private static DebugModule activeModules = DebugModule.TowerPanel;
     
     // 日志等级
     public enum LogLevel

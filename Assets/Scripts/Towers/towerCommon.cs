@@ -443,6 +443,7 @@ public class towerCommon : MonoBehaviour
         // 如果鼠标左键被按下
         if (Input.GetMouseButtonDown(0))
         {
+
             // 如果鼠标指针在UI上，则返回
             if (EventSystem.current.IsPointerOverGameObject())
             {
@@ -451,8 +452,17 @@ public class towerCommon : MonoBehaviour
 
             // 获取鼠标位置
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            // 只检测防御塔层的碰撞体
+            int towerLayer = LayerMask.NameToLayer("Tower");
+            LayerMask towerMask = 1 << towerLayer;
             // 检测点击
-            Collider2D hitCollider = Physics2D.OverlapPoint(mousePosition);
+            Collider2D hitCollider = Physics2D.OverlapPoint(mousePosition, towerMask);
+
+            DebugLevelControl.Log("点击位置: " + mousePosition.ToString() + "\n"
+                                    + "检测到碰撞体 = " + (hitCollider ? hitCollider.name : "无") + "\n"
+                                    + "当前防御塔位置 = " + transform.position.ToString(),
+                DebugLevelControl.DebugModule.TowerPanel,
+                DebugLevelControl.LogLevel.Debug);
 
             // 如果点击到了防御塔
             if (hitCollider != null && hitCollider.gameObject == gameObject)

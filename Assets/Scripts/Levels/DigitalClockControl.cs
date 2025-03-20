@@ -236,6 +236,9 @@ public class DigitalClockControl : MonoBehaviour
         
         // 重置状态
         isClockActive = false;
+
+        // 销毁时钟对象
+        Destroy(this.gameObject);
     }
 
     private void OnDestroy()

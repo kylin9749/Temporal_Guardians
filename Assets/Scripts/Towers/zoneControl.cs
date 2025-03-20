@@ -41,7 +41,7 @@ public class zoneControl : MonoBehaviour
              enemyLayer);
         
         DebugLevelControl.Log("DetectEnemies enemiesInRange: " + enemiesInRange.Length,
-            DebugLevelControl.DebugModule.Tower,
+            DebugLevelControl.DebugModule.TowerZone,
             DebugLevelControl.LogLevel.Debug);
 
         tower.enemyUpdate(enemiesInRange);

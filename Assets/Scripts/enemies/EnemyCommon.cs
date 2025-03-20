@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum EnemyNumChangeType
+{
+    Add = 1,
+    Sub = -1,
+}
+
 public class EnemyCommon : MonoBehaviour
 {
     private EnemyData enemyData;
@@ -359,7 +365,7 @@ public class EnemyCommon : MonoBehaviour
             //玩家获胜，增加金币
             battleController.UpdateMoney(enemyData.coinsDrop);
         }
-        battleController.UpdateEnemyNumber(-1);
+        battleController.UpdateEnemyNumber(1, EnemyNumChangeType.Sub, gameObject);
         Destroy(gameObject);
     }
 

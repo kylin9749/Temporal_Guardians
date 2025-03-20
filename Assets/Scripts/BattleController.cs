@@ -32,6 +32,7 @@ public class BattleController : MonoBehaviour
     [SerializeField] private PauseMenuUI pauseMenuUI;  // 在Inspector中指定
 
     private int previousWave = -1; // 添加变量跟踪上一次的波次
+    private List<GameObject> activeEnemies = new List<GameObject>();
 
     void Awake()
     {
@@ -139,9 +140,22 @@ public class BattleController : MonoBehaviour
         moneyText.text = $"Money: {currentMoney}";
     }
 
-    public void UpdateEnemyNumber(int number)
+    public void UpdateEnemyNumber(int number, EnemyNumChangeType changeType, GameObject enemy)
     {
-        enemyNumber += number;
+        if(changeType == EnemyNumChangeType.Add)
+        {
+            enemyNumber += number;
+            activeEnemies.Add(enemy);
+        }
+        else if(changeType == EnemyNumChangeType.Sub)
+        {
+            enemyNumber -= number;
+            activeEnemies.Remove(enemy);
+        }
+        else
+        {
+            Debug.LogError("无效的敌人数量变化类型!");
+        }
     }
     
     public void UpdateHealth(int health)
@@ -171,6 +185,9 @@ public class BattleController : MonoBehaviour
             return;
         }
 
+        // 停止可能正在等待的自动开始协程
+        StopCoroutine("AutoStartNextWave");
+        
         StartCoroutine(SpawnWave(currentWave));
 
         setClockEnable(true);
@@ -203,9 +220,6 @@ public class BattleController : MonoBehaviour
         isWaveActive = true;
         LevelData.WaveData wave = currentLevelData.waves[waveIndex];
 
-        // 等待这波开始的延迟
-        yield return new WaitForSeconds(wave.waveDelay);
-
         foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
         {
             // 添加出生点索引检查
@@ -233,6 +247,7 @@ public class BattleController : MonoBehaviour
             if (enemy != null)
             {
                 enemyNumber++;
+                activeEnemies.Add(enemy);
             }
         }
 
@@ -241,6 +256,27 @@ public class BattleController : MonoBehaviour
         
         // 波次变化后更新下一波生成点
         UpdateSpawnPointsVisibility();
+        
+        // 添加：如果还有下一波，则自动安排下一波的生成
+        if (currentWave < currentLevelData.waves.Count)
+        {
+            // 安排下一波的自动生成
+            StartCoroutine(AutoStartNextWave());
+        }
+    }
+
+    // 添加新方法：安排下一波自动开始
+    private IEnumerator AutoStartNextWave()
+    {
+        // 使用当前波次的 waveDelay 作为下一波的等待时间
+        float nextWaveDelay = currentLevelData.waves[currentWave].waveDelay;
+        yield return new WaitForSeconds(nextWaveDelay);
+        
+        // 如果没有手动启动且仍然需要启动下一波
+        if (!isWaveActive && currentWave < currentLevelData.waves.Count && !isEndGame)
+        {
+            StartCoroutine(SpawnWave(currentWave));
+        }
     }
 
     // Update is called once per frame
@@ -266,14 +302,6 @@ public class BattleController : MonoBehaviour
             endGameUI.SetActive(true);
             endGameUIString.text = "Game Win";
             isEndGame = true;
-        }
-        else if (enemyNumber <= 0)
-        {
-            setClockEnable(false);
-        }
-        else if (enemyNumber > 0)
-        {
-            setClockEnable(true);
         }
     }
 
@@ -364,11 +392,40 @@ public class BattleController : MonoBehaviour
 
     public void OnClickReturnToLevelSelect()
     {
-        SceneManager.LoadScene("LevelScene");
+        StartCoroutine(LoadLevelSelectAsync());
+    }
+    
+    private IEnumerator LoadLevelSelectAsync()
+    {
+        // 先清理资源
+        BattleController battleController = FindObjectOfType<BattleController>();
+        if (battleController != null)
+        {
+            battleController.CleanupBeforeSceneChange();
+        }
+        
+        Time.timeScale = 1f;
+        
+        // 异步加载主菜单场景
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("LevelScene");
+        
+        // 等待场景加载完成
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
     }
 
     public void CleanupBeforeSceneChange()
     {
+        // 先销毁所有敌人
+        foreach (var enemy in activeEnemies)
+        {
+            if (enemy != null)
+                Destroy(enemy);
+        }
+        activeEnemies.Clear();
+        
         // 停止所有协程
         StopAllCoroutines();
         
@@ -383,7 +440,7 @@ public class BattleController : MonoBehaviour
             digitalClockControl.CleanupResources();
         }
 
-        // 清理敌人和防御塔资源
+        // 清理地图资源
         if (mapMaker != null)
         {
             mapMaker.CleanupResources();
@@ -397,6 +454,9 @@ public class BattleController : MonoBehaviour
         
         // 恢复正常时间流速（如果暂停状态）
         Time.timeScale = 1f;
+
+        // 销毁当前对象
+        Destroy(this.gameObject);
     }
 
     // 处理场景卸载事件
