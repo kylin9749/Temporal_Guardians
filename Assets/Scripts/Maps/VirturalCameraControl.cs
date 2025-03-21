@@ -41,7 +41,7 @@ public class VirturalCameraControl : MonoBehaviour
         {
             Vector2 mouseMovementDelta = lastDragPosition - (Vector2)Input.mousePosition;
 
-            float dragPanSpeed = 2f;
+            float dragPanSpeed = 1f;
             inputDir.x = mouseMovementDelta.x * dragPanSpeed;
             inputDir.y = mouseMovementDelta.y * dragPanSpeed;
 
@@ -49,7 +49,7 @@ public class VirturalCameraControl : MonoBehaviour
         }
 
         Vector3 moveDir = transform.right * inputDir.x + transform.up * inputDir.y;
-        float moveSpeed = 10f;
+        float moveSpeed = 2f;
         transform.position += moveDir * moveSpeed * Time.deltaTime;
     }
 

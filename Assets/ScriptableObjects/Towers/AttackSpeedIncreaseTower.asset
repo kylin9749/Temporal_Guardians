@@ -27,4 +27,5 @@ MonoBehaviour:
   skillType: 2
   skillDamage: 50
   skillRange: 5
-  skillName: 333
+  skillName: Speed Up
+  skillDescription: Increase the attack speed

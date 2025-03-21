@@ -194,17 +194,11 @@ public class MechaClockControl : MonoBehaviour
                 float minutes = totalMinutes % 60f;
 
                 float minuteAngle = minutes * 6f;
-                float hourAngle = hours * 30f;
-                DebugLevelControl.Log("minutes: " + minutes + " minuteAngle: " + minuteAngle,
-                    DebugLevelControl.DebugModule.MechaClock,
-                    DebugLevelControl.LogLevel.Debug);
-                DebugLevelControl.Log("hours: " + hours + " hourAngle: " + hourAngle,
-                    DebugLevelControl.DebugModule.MechaClock,
-                    DebugLevelControl.LogLevel.Debug);
+                float hourAngle = hours * 30f + minutes * 0.5f;
 
-                // 使用动画平滑过渡
-                StartCoroutine(AnimateHandRotation(minuteHand, -minuteAngle - startMinuteAngle));
-                StartCoroutine(AnimateHandRotation(hourHand, -hourAngle - startHourAngle));
+                // 修复：不要再减去startMinuteAngle和startHourAngle
+                StartCoroutine(AnimateHandRotation(minuteHand, -minuteAngle));
+                StartCoroutine(AnimateHandRotation(hourHand, -hourAngle));
 
                 timeOffset += 30f; // 每秒更新一次，相当于走过了30秒
             }

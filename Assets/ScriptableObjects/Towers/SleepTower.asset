@@ -27,4 +27,5 @@ MonoBehaviour:
   skillType: 0
   skillDamage: 50
   skillRange: 5
-  skillName: 111
+  skillName: Sleep Magic
+  skillDescription: Sleep all the enemies in attack range

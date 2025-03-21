@@ -85,7 +85,7 @@ public class TowerSkillCutscene : MonoBehaviour
         }
         
         skillNameText.text = towerData.skillName;
-        towerNameText.text = string.IsNullOrEmpty(towerData.towerName) ? "未知塔" : towerData.towerName;
+        towerNameText.text = string.IsNullOrEmpty(towerData.towerName) ? "Unknown Tower" : towerData.towerName;
     }
     
     public void PlayIntroAnimation()
@@ -106,8 +106,8 @@ public class TowerSkillCutscene : MonoBehaviour
         towerNameText.alpha = 0f;
         towerNameText.DOFade(1f, 0.3f).SetDelay(0.4f).SetUpdate(true);
         
-        towerImage.rectTransform.localPosition = new Vector3(-500, 0, 0);
-        towerImage.rectTransform.DOLocalMoveX(0, 0.7f).SetEase(Ease.OutQuint).SetUpdate(true);
+        // towerImage.rectTransform.localPosition = new Vector3(-500, 0, 0);
+        // towerImage.rectTransform.DOLocalMoveX(0, 0.7f).SetEase(Ease.OutQuint).SetUpdate(true);
     }
     
     public void PlayOutroAnimation()

@@ -29,6 +29,7 @@ public class BattleController : MonoBehaviour
     public TextMeshProUGUI moneyText;  // 添加对金钱UI的引用
     public TextMeshProUGUI healthText; // 添加对生命值UI的引用
     public TextMeshProUGUI healthTextCenter; // 添加对生命值UI的引用
+    public TextMeshProUGUI waveText;  // 添加对波数UI的引用
     [SerializeField] private PauseMenuUI pauseMenuUI;  // 在Inspector中指定
 
     private int previousWave = -1; // 添加变量跟踪上一次的波次
@@ -127,6 +128,13 @@ public class BattleController : MonoBehaviour
         moneyText.text = $"Money: {currentLevelData.initialMoney}";
         healthText.text = $"Health: {currentLevelData.initialHealth}";
         healthTextCenter.text = currentLevelData.initialHealth.ToString();
+        UpdateWaveText();  // 初始化波数显示
+    }
+
+    // 添加更新波数显示的方法
+    private void UpdateWaveText()
+    {
+        waveText.text = $"Waves: {currentWave}/{currentLevelData.waves.Count}";
     }
 
     public int GetMoney()
@@ -257,6 +265,9 @@ public class BattleController : MonoBehaviour
         // 波次变化后更新下一波生成点
         UpdateSpawnPointsVisibility();
         
+        // 更新波数显示
+        UpdateWaveText();
+        
         // 添加：如果还有下一波，则自动安排下一波的生成
         if (currentWave < currentLevelData.waves.Count)
         {
@@ -288,6 +299,7 @@ public class BattleController : MonoBehaviour
         if (currentWave < currentLevelData.waves.Count && currentWave != previousWave)
         {
             UpdateSpawnPointsVisibility();
+            UpdateWaveText();  // 在波数变化时更新显示
             previousWave = currentWave;
         }
 

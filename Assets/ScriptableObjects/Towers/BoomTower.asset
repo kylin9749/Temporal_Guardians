@@ -27,4 +27,5 @@ MonoBehaviour:
   skillType: 1
   skillDamage: 20
   skillRange: 5
-  skillName: 222
+  skillName: Big Boom
+  skillDescription: Big boom take damage to a range of enemies
