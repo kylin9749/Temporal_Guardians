@@ -18,6 +18,7 @@ public class DebugLevelControl : MonoBehaviour
         TowerCombo = 1 << 6,
         TowerZone = 1 << 7,
         TowerPanel = 1 << 8,
+        TimeManager = 1 << 9,
         // 可以继续添加更多模块...
     }
 

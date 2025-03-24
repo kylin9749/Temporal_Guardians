@@ -35,6 +35,19 @@ public class BattleController : MonoBehaviour
     private int previousWave = -1; // 添加变量跟踪上一次的波次
     private List<GameObject> activeEnemies = new List<GameObject>();
 
+    // 添加 TimeManager 预制体引用
+    public GameObject timeManagerPrefab;
+    private TimeManager timeManager;
+
+    // 添加LineRenderer和路径指示器预制体
+    public GameObject pathIndicatorPrefab;
+    public Material pathMaterial;
+    private Dictionary<int, LineRenderer> pathRenderers = new Dictionary<int, LineRenderer>();
+    private Dictionary<int, GameObject> pathIndicators = new Dictionary<int, GameObject>();
+
+    // 添加配置项
+    [SerializeField] private int pathAnimationLoops = -1; // 动画循环次数，-1表示无限循环
+
     void Awake()
     {
 
@@ -82,19 +95,6 @@ public class BattleController : MonoBehaviour
         currentChapterData = chapterConfig;
         mapMaker = GetComponent<MapMaker>();
         mapMaker.InitMap(chapterConfig.xColumn, chapterConfig.yRow);
-        
-        if (chapterConfig.chapterType == ChapterType.MechaClock)
-        {
-            MechaClockLevel.SetActive(true);
-            mechaClockControl = MechaClockLevel.GetComponent<MechaClockControl>();
-            mechaClockControl.Initialize(this);
-        }
-        else if (chapterConfig.chapterType == ChapterType.DigitalClock)
-        {
-            DigitalClockLevel.SetActive(true);
-            digitalClockControl = DigitalClockLevel.GetComponent<DigitalClockControl>();
-            digitalClockControl.Initialize(this);
-        }
 
         // 加载关卡配置
         var levelConfig = System.Array.Find(levelConfigs, x => x.levelName == levelIndex);
@@ -106,6 +106,31 @@ public class BattleController : MonoBehaviour
             Debug.LogError($"未找到关卡 {levelIndex} 的配置");
         }
 
+        // 初始化 TimeManager
+        if (timeManagerPrefab != null)
+        {
+            GameObject timeManagerObj = Instantiate(timeManagerPrefab);
+            timeManager = timeManagerObj.GetComponent<TimeManager>();
+            
+            if (timeManager != null)
+            {
+                timeManager.Initialize(levelConfig.startTimeHour);
+            }
+            else
+            {
+                Debug.LogError("无法获取 TimeManager 组件");
+            }
+        }
+        else
+        {
+            // 如果未指定预制体，则直接在场景中创建
+            GameObject timeManagerObj = new GameObject("TimeManager");
+            timeManager = timeManagerObj.AddComponent<TimeManager>();
+            timeManager.Initialize(levelConfig.startTimeHour);
+        }
+
+
+
         currentLevelData = levelConfig;
         currentMoney = levelConfig.initialMoney;
         currentHealth = levelConfig.initialHealth;
@@ -113,11 +138,27 @@ public class BattleController : MonoBehaviour
 
         if (chapterConfig.chapterType == ChapterType.MechaClock)
         {
-            mechaClockControl.SetClockTime(levelConfig.startTimeHour * 60 * 60);                
+            MechaClockLevel.SetActive(true);
+            mechaClockControl = MechaClockLevel.GetComponent<MechaClockControl>();
+            mechaClockControl.Initialize(this);
+            
+            // 设置时钟控制器
+            if (timeManager != null)
+            {
+                timeManager.SetClockControls(mechaClockControl, null);
+            }
         }
         else if (chapterConfig.chapterType == ChapterType.DigitalClock)
         {
-            digitalClockControl.SetClockTime(levelConfig.startTimeHour * 60 * 60);
+            DigitalClockLevel.SetActive(true);
+            digitalClockControl = DigitalClockLevel.GetComponent<DigitalClockControl>();
+            digitalClockControl.Initialize(this);
+            
+            // 设置时钟控制器
+            if (timeManager != null)
+            {
+                timeManager.SetClockControls(null, digitalClockControl);
+            }
         }
         
         // 初始化后更新生成点状态
@@ -198,14 +239,14 @@ public class BattleController : MonoBehaviour
         
         StartCoroutine(SpawnWave(currentWave));
 
+        // 激活时钟
         setClockEnable(true);
-
-        //调试代码，只出1个怪
-        // GameObject enemy = Instantiate(enemyPrefab, transform);
-        // if (enemy != null)
-        // {
-        //     enemy.transform.position = currentLevel.spawnPoints[0].GridObject.transform.position;
-        // }
+        
+        // 启动时间流逝
+        if (timeManager != null)
+        {
+            timeManager.StartTimeFlow();
+        }
     }
 
     private void setClockEnable(bool enable)
@@ -227,7 +268,8 @@ public class BattleController : MonoBehaviour
     {
         isWaveActive = true;
         LevelData.WaveData wave = currentLevelData.waves[waveIndex];
-
+        
+        // 开始生成敌人
         foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
         {
             // 添加出生点索引检查
@@ -258,7 +300,10 @@ public class BattleController : MonoBehaviour
                 activeEnemies.Add(enemy);
             }
         }
-
+        
+        // 清除路径预览
+        ClearPathPreviews();
+        
         isWaveActive = false;
         currentWave++;
         
@@ -323,6 +368,11 @@ public class BattleController : MonoBehaviour
         if (currentWave < currentLevelData.waves.Count)
         {
             LevelData.WaveData wave = currentLevelData.waves[currentWave];
+            
+            // 先清除之前的路径预览
+            ClearPathPreviews();
+            
+            // 显示出生点和路径预览
             foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
             {
                 if (mapMaker.spawnPoints[enemyInfo.spawnPoint].NextSpawnPoint != null)
@@ -334,6 +384,9 @@ public class BattleController : MonoBehaviour
                     Debug.LogError("未找到下一个出生点!");
                 }
             }
+            
+            // 添加路径预览显示
+            ShowPathPreviews(wave);
         }
     }
 
@@ -418,6 +471,21 @@ public class BattleController : MonoBehaviour
         
         Time.timeScale = 1f;
         
+        switch(currentChapterData.chapterType)
+        {
+            case ChapterType.MechaClock:
+                PlayerPrefs.SetInt("SelectedChapter", 1);
+                SceneManager.LoadScene("LevelScene");
+                break;
+            case ChapterType.DigitalClock:
+                PlayerPrefs.SetInt("SelectedChapter", 2);
+                SceneManager.LoadScene("LevelScene");
+                break;
+            default:
+                Debug.LogError("未找到章节类型!");
+                break;
+        }
+
         // 异步加载主菜单场景
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("LevelScene");
         
@@ -467,6 +535,13 @@ public class BattleController : MonoBehaviour
         // 恢复正常时间流速（如果暂停状态）
         Time.timeScale = 1f;
 
+        // 清理 TimeManager
+        if (timeManager != null)
+        {
+            Destroy(timeManager.gameObject);
+            timeManager = null;
+        }
+
         // 销毁当前对象
         Destroy(this.gameObject);
     }
@@ -487,5 +562,185 @@ public class BattleController : MonoBehaviour
         return towerComboControl;
     }
     */
+
+    // 显示路径预览方法
+    private void ShowPathPreviews(LevelData.WaveData wave)
+    {
+        // 为每个生成点创建一条路径
+        HashSet<int> processedSpawnPoints = new HashSet<int>();
+        
+        foreach (LevelData.EnemySpawnData enemyInfo in wave.enemies)
+        {
+            // 避免重复处理同一个生成点
+            if (processedSpawnPoints.Contains(enemyInfo.spawnPoint))
+                continue;
+            
+            processedSpawnPoints.Add(enemyInfo.spawnPoint);
+            
+            // 计算从生成点到中心的路径
+            List<MapGrid> path = CalculatePathForPreview(mapMaker.spawnPoints[enemyInfo.spawnPoint], mapMaker.CenterGrid);
+            
+            if (path.Count > 0)
+            {
+                // 创建路径线
+                CreatePathLine(enemyInfo.spawnPoint, path);
+                
+                // 创建路径指示器
+                CreatePathIndicator(enemyInfo.spawnPoint, path);
+            }
+        }
+    }
+
+    // 计算预览路径
+    private List<MapGrid> CalculatePathForPreview(MapGrid start, MapGrid end)
+    {
+        // 使用BFS计算路径
+        Queue<MapGrid> queue = new Queue<MapGrid>();
+        Dictionary<MapGrid, MapGrid> cameFrom = new Dictionary<MapGrid, MapGrid>();
+        
+        queue.Enqueue(start);
+        cameFrom[start] = null;
+        
+        bool foundPath = false;
+        
+        while (queue.Count > 0 && !foundPath)
+        {
+            MapGrid current = queue.Dequeue();
+            
+            if (current == end)
+            {
+                foundPath = true;
+                break;
+            }
+            
+            foreach (MapGrid neighbor in mapMaker.GetNeighborGrids(current))
+            {
+                if ((mapMaker.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center) && !cameFrom.ContainsKey(neighbor))
+                {
+                    queue.Enqueue(neighbor);
+                    cameFrom[neighbor] = current;
+                }
+            }
+        }
+        
+        // 如果找到路径，重建它
+        List<MapGrid> path = new List<MapGrid>();
+        if (foundPath)
+        {
+            MapGrid current = end;
+            while (current != null)
+            {
+                path.Insert(0, current);
+                if (cameFrom.TryGetValue(current, out MapGrid previous))
+                    current = previous;
+                else
+                    current = null;
+            }
+        }
+        
+        return path;
+    }
+
+    // 创建路径线
+    private void CreatePathLine(int spawnPointIndex, List<MapGrid> path)
+    {
+        GameObject lineObj = new GameObject("PathLine_" + spawnPointIndex);
+        LineRenderer line = lineObj.AddComponent<LineRenderer>();
+        
+        // 配置LineRenderer
+        line.material = pathMaterial;
+        line.startWidth = 0.1f;
+        line.endWidth = 0.1f;
+        line.positionCount = path.Count;
+        line.startColor = new Color(0f, 1f, 1f, 0.5f);  // 半透明蓝色起点
+        line.endColor = new Color(0f, 1f, 1f, 0.5f);    // 相同颜色终点
+
+        // 设置路径点
+        for (int i = 0; i < path.Count; i++)
+        {
+            Vector3 pointPosition = path[i].transform.position;
+            pointPosition.y += 0.05f; // 稍微抬高一点，避免与地面重叠
+            line.SetPosition(i, pointPosition);
+        }
+        
+        // 存储LineRenderer以便后续清理
+        pathRenderers[spawnPointIndex] = line;
+    }
+
+    // 创建路径指示器
+    private void CreatePathIndicator(int spawnPointIndex, List<MapGrid> path)
+    {
+        if (pathIndicatorPrefab == null) return;
+        
+        // 实例化指示器
+        GameObject indicator = Instantiate(pathIndicatorPrefab, path[0].transform.position, Quaternion.identity);
+        
+        // 存储指示器以便后续清理
+        pathIndicators[spawnPointIndex] = indicator;
+        
+        // 启动指示器动画协程
+        StartCoroutine(AnimatePathIndicator(indicator, path));
+    }
+
+    // 指示器动画
+    private IEnumerator AnimatePathIndicator(GameObject indicator, List<MapGrid> path)
+    {
+        float speed = 4.0f; // 移动速度
+        
+        int loopCount = 0;
+        while (pathAnimationLoops == -1 || loopCount < pathAnimationLoops)
+        {
+            // 沿路径移动指示器
+            for (int i = 0; i < path.Count - 1; i++)
+            {
+                Vector3 startPos = path[i].transform.position;
+                Vector3 endPos = path[i + 1].transform.position;
+                float distance = Vector3.Distance(startPos, endPos);
+                float duration = distance / speed;
+                
+                float elapsed = 0;
+                while (elapsed < duration)
+                {
+                    if (indicator == null) yield break; // 安全检查
+                    
+                    float t = elapsed / duration;
+                    indicator.transform.position = Vector3.Lerp(startPos, endPos, t);
+                    elapsed += Time.deltaTime;
+                    yield return null;
+                }
+                
+                indicator.transform.position = endPos;
+            }
+            
+            // 立即将指示器移回起点
+            if (indicator != null && path.Count > 0)
+                indicator.transform.position = path[0].transform.position;
+            
+            yield return new WaitForSeconds(0.5f);
+            
+            if (pathAnimationLoops != -1)
+                loopCount++;
+        }
+    }
+
+    // 清除路径预览
+    private void ClearPathPreviews()
+    {
+        // 清理路径线
+        foreach (var renderer in pathRenderers.Values)
+        {
+            if (renderer != null)
+                Destroy(renderer.gameObject);
+        }
+        pathRenderers.Clear();
+        
+        // 清理指示器
+        foreach (var indicator in pathIndicators.Values)
+        {
+            if (indicator != null)
+                Destroy(indicator);
+        }
+        pathIndicators.Clear();
+    }
 
 }

@@ -88,17 +88,25 @@ public class PauseMenuManager : MonoBehaviour
     }
     public void TogglePause()
     {
+        // 暂停时间流逝
+        if (TimeManager.Instance == null)
+        {
+            Debug.LogError("TimeManager is null");
+        }
+        
         isPaused = !isPaused;
         Time.timeScale = isPaused ? 0f : 1f;
-        
+
         // 可以在这里触发UI显示
         if (isPaused)
         {
             ShowPauseMenu();
+            TimeManager.Instance.PauseTimeFlow();
         }
         else
         {
             HidePauseMenu();
+            TimeManager.Instance.StartTimeFlow();
         }
     }
     private void ShowPauseMenu()

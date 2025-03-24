@@ -49,6 +49,9 @@ public class TowerFactory : MonoBehaviour
             else
                 Debug.LogError("towerCommon component not found on towerBasePrefab");
             
+            // 添加时间增强组件
+            TowerTimeEnhancer timeEnhancer = tower.AddComponent<TowerTimeEnhancer>();
+            
             // 可以在这里添加其他初始化逻辑
             // 比如特效、音效等
             

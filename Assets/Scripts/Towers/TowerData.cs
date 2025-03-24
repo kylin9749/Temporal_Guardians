@@ -23,5 +23,8 @@ public class TowerData : ScriptableObject
     public string skillName;        // 技能名称
     public string skillDescription; // 技能描述
 
+    [Header("时间相关效果")]
+    public TowerTimeEffect timeEffect;  // 时间相关效果配置
+
     // ... 其他技能相关参数 ...
 }

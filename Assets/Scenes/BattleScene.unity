@@ -232,7 +232,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 140597965}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.00000012004}
+  m_LocalPosition: {x: 0, y: 0, z: -0.00000013643}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -240,8 +240,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 571, y: -50}
-  m_SizeDelta: {x: 180, y: 60}
+  m_AnchoredPosition: {x: 606.19, y: -50}
+  m_SizeDelta: {x: 250.38, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &140597967
 MonoBehaviour:
@@ -1021,7 +1021,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 422392097}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.00000001083}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1029,8 +1029,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 100, y: -50}
-  m_SizeDelta: {x: 180, y: 60}
+  m_AnchoredPosition: {x: 123.26001, y: -50}
+  m_SizeDelta: {x: 226.51, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &422392099
 MonoBehaviour:
@@ -3843,7 +3843,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 3.9648438, y: -26}
+  m_AnchoredPosition: {x: 3.9648438, y: -26.000015}
   m_SizeDelta: {x: -442.07, y: -502.02}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1360151414
@@ -4424,6 +4424,10 @@ MonoBehaviour:
   healthTextCenter: {fileID: 695953741}
   waveText: {fileID: 140597967}
   pauseMenuUI: {fileID: 1360151416}
+  timeManagerPrefab: {fileID: 692602232001952540, guid: b5b03635918a77a48a4e55410644b396, type: 3}
+  pathIndicatorPrefab: {fileID: 8827677676373697101, guid: 2216013819b58504aa4f22eba0083f39, type: 3}
+  pathMaterial: {fileID: 2100000, guid: 8960e411474cc1e4d8d005976671b3ea, type: 2}
+  pathAnimationLoops: -1
 --- !u!114 &1497185078
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4813,7 +4817,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 313, y: -50}
+  m_AnchoredPosition: {x: 344, y: -50}
   m_SizeDelta: {x: 180, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1583158771

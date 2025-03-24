@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f51740890ac826d4cb3563c120c2dfe4, type: 3}
   m_Name: Mutant
   m_EditorClassIdentifier: 
-  maxHealth: 50
+  maxHealth: 70
   distanceToEnd: 0
   coinsDrop: 20
   originalMoveSpeed: 2

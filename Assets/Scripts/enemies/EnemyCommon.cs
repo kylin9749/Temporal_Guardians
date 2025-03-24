@@ -26,6 +26,9 @@ public class EnemyCommon : MonoBehaviour
     private EnemySkillCommon skillComponent;
     private float distanceToCenter;
     private BattleController battleController;
+    private List<MapGrid> pathToCenter = new List<MapGrid>();
+    private bool needRecalculatePath = true;
+    private Vector3 targetPosition;
 
     public void InitializeEnemy(EnemyData data, BattleController controller)
     {
@@ -82,7 +85,9 @@ public class EnemyCommon : MonoBehaviour
     // 受到伤害的函数
     public void TakeDamage(float damage)
     {
-        Debug.Log($"怪物当前生命值:{currentHealth}, 受到伤害:{damage}");
+        DebugLevelControl.Log($"怪物当前生命值:{currentHealth}, 受到伤害:{damage}",
+            DebugLevelControl.DebugModule.Enemy,
+            DebugLevelControl.LogLevel.Debug);
 
         // 计算血量百分比
         float healthPercentage = (currentHealth - damage) / enemyData.maxHealth;
@@ -147,101 +152,180 @@ public class EnemyCommon : MonoBehaviour
     // 获取下一个移动格子
     protected MapGrid GetNextGrid()
     {
+        // 获取当前格子
         currentGrid = GetCurrentGridByPosition();
-        if(currentGrid == null) return null;
-        // Debug.Log("currentGrid.type = " + currentGrid.Type);
-        // Debug.Log("currentGrid.position = " + currentGrid.X + "," + currentGrid.Y);
-
-        distanceToCenter = CalculateDistanceToCenter(currentGrid);
-
-        // 如果怪物已经走到中心点，则销毁当前怪物并触发掉血逻辑
-        if(currentGrid.Type == GridType.Center)
+        if (currentGrid == null) return null;
+        
+        // 如果到达中心点，触发死亡逻辑
+        if (currentGrid.Type == GridType.Center)
         {
             Die(true);
             isDead = true;
             return null;
         }
-
-        // 如果怪物没走到currentGrid，的中间，则维持原方向继续走，暂时不选新路径
-        if(nextGrid != null)
+        
+        // 如果需要重新计算路径
+        if (needRecalculatePath)
         {
-            if (Vector3.Distance(transform.position, currentGrid.transform.position) > 0.1f)
+            CalculatePathToCenter();
+            needRecalculatePath = false;
+        }
+        
+        // 如果路径为空或只有一个点(当前点)，返回null
+        if (pathToCenter.Count <= 1) return null;
+        
+        // 找到路径中的下一个点
+        int currentIndex = pathToCenter.IndexOf(currentGrid);
+        if (currentIndex >= 0 && currentIndex < pathToCenter.Count - 1)
+        {
+            nextGrid = pathToCenter[currentIndex + 1];
+            // 更新移动方向
+            currentToward.Set(nextGrid.X - currentGrid.X, nextGrid.Y - currentGrid.Y);
+            return nextGrid;
+        }
+        
+        // 如果当前点不在路径中，重新计算路径
+        needRecalculatePath = true;
+        return null;
+    }
+
+    // 新增路径计算方法
+    private void CalculatePathToCenter()
+    {
+        pathToCenter.Clear();
+        
+        // 找到中心点
+        MapGrid centerGrid = FindCenterGrid();
+        if (centerGrid == null || currentGrid == null) return;
+        
+        // 使用A*算法计算最短路径
+        pathToCenter = CalculatePathAStar(currentGrid, centerGrid);
+        
+        // 如果没找到路径，尝试使用BFS计算
+        if (pathToCenter.Count == 0)
+        {
+            Debug.LogWarning($"A*算法无法找到从({currentGrid.X},{currentGrid.Y})到中心点的路径，尝试使用BFS");
+            pathToCenter = CalculatePathBFS(currentGrid, centerGrid);
+            
+            if (pathToCenter.Count > 0)
             {
-                return nextGrid;
+                Debug.Log("BFS成功找到路径");
             }
         }
+    }
 
-        List<MapGrid> validNeighbors = new List<MapGrid>();
-        foreach (MapGrid neighbor in mapMaker.GetNeighborGrids(currentGrid))
+    // A*寻路算法实现
+    private List<MapGrid> CalculatePathAStar(MapGrid start, MapGrid goal)
+    {
+        // 定义开放和关闭列表
+        List<MapGrid> openSet = new List<MapGrid>();
+        HashSet<MapGrid> closedSet = new HashSet<MapGrid>();
+        
+        // 记录每个节点的来源节点，用于重建路径
+        Dictionary<MapGrid, MapGrid> cameFrom = new Dictionary<MapGrid, MapGrid>();
+        
+        // 记录起点到每个节点的实际代价
+        Dictionary<MapGrid, float> gScore = new Dictionary<MapGrid, float>();
+        
+        // 记录每个节点的估计总代价
+        Dictionary<MapGrid, float> fScore = new Dictionary<MapGrid, float>();
+        
+        // 初始化起点
+        openSet.Add(start);
+        gScore[start] = 0;
+        fScore[start] = HeuristicCost(start, goal);
+        
+        while (openSet.Count > 0)
         {
-            if (mapMaker.isRoadType(neighbor.Type) || neighbor.Type == GridType.Center)
+            // 找到开放列表中f值最小的节点
+            MapGrid current = GetLowestFScore(openSet, fScore);
+            
+            // 如果到达目标，重建路径并返回
+            if (current == goal)
             {
-                validNeighbors.Add(neighbor);
+                return ReconstructPath(cameFrom, current);
             }
-        }
-
-        if(validNeighbors.Count == 0)
-        {
-            Debug.LogError("validNeighbors.Count = " + validNeighbors.Count);
-            return null;
-        }
-        // Debug.Log("validNeighbors.Count = " + validNeighbors.Count);
-        // foreach(MapGrid grid in validNeighbors)
-        // {
-        //     Debug.Log("neighbor.type = " + grid.Type);
-        //     Debug.Log("neighbor.position = " + grid.X + "," + grid.Y);
-        // }
-        // 找到距离中心最近的邻居格子
-        List<MapGrid> bestGrids = new List<MapGrid>();
-        int minDistance = int.MaxValue;
-
-        // 先找出所有最短距离的格子
-        foreach (MapGrid neighbor in validNeighbors)
-        {
-            int distance = CalculateDistanceToCenter(neighbor);
-
-            if (distance < minDistance)
+            
+            // 将当前节点从开放列表移到关闭列表
+            openSet.Remove(current);
+            closedSet.Add(current);
+            
+            // 检查所有邻居节点
+            foreach (MapGrid neighbor in mapMaker.GetNeighborGrids(current))
             {
-                minDistance = distance;
-                bestGrids.Clear();
-                bestGrids.Add(neighbor);
-            }
-            else if (distance == minDistance)
-            {
-                bestGrids.Add(neighbor);
-            }
-        }
-        // Debug.Log("bestGrids.Count = " + bestGrids.Count);
-        // 默认情况下只有1个最佳选择
-        nextGrid = bestGrids[0];
-
-        // 如果存在多个最佳选择，则需要根据当前怪物的preferTurn选择
-        if (bestGrids.Count == 2)
-        {
-            // 确认前方的两条路是直行 or 拐弯，再根据当前怪物的preferTurn选择  
-            foreach(MapGrid grid in bestGrids)
-            {
-                Vector2Int nextToward = new Vector2Int(grid.X - currentGrid.X, grid.Y - currentGrid.Y);
-                if(nextToward == currentToward && !enemyData.preferTurn)
+                // 忽略不可通行的格子和已在关闭列表的格子
+                if (!IsWalkable(neighbor) || closedSet.Contains(neighbor))
+                    continue;
+                
+                // 计算通过当前节点到达邻居的代价
+                float tentativeGScore = gScore[current] + 1;
+                
+                // 如果邻居不在开放列表中，添加它
+                if (!openSet.Contains(neighbor))
                 {
-                    nextGrid = grid;
-                    break;
+                    openSet.Add(neighbor);
                 }
-                else if(nextToward != currentToward && enemyData.preferTurn)
-                {
-                    nextGrid = grid;
-                    break;
-                }
-                else
+                // 如果找到了更好的路径，更新代价
+                else if (tentativeGScore >= gScore.GetValueOrDefault(neighbor, float.MaxValue))
                 {
                     continue;
                 }
+                
+                // 更新邻居的信息
+                cameFrom[neighbor] = current;
+                gScore[neighbor] = tentativeGScore;
+                fScore[neighbor] = gScore[neighbor] + HeuristicCost(neighbor, goal);
             }
         }
+        
+        // 没找到路径
+        return new List<MapGrid>();
+    }
 
-        currentToward.Set(nextGrid.X - currentGrid.X, nextGrid.Y - currentGrid.Y);
-        return nextGrid;
+    // 获取f值最小的节点
+    private MapGrid GetLowestFScore(List<MapGrid> openSet, Dictionary<MapGrid, float> fScore)
+    {
+        MapGrid lowest = openSet[0];
+        float lowestFScore = fScore.GetValueOrDefault(lowest, float.MaxValue);
+        
+        foreach (var node in openSet)
+        {
+            float f = fScore.GetValueOrDefault(node, float.MaxValue);
+            if (f < lowestFScore)
+            {
+                lowest = node;
+                lowestFScore = f;
+            }
+        }
+        
+        return lowest;
+    }
 
+    // 计算两点间的启发式代价（曼哈顿距离）
+    private float HeuristicCost(MapGrid a, MapGrid b)
+    {
+        return Mathf.Abs(a.X - b.X) + Mathf.Abs(a.Y - b.Y);
+    }
+
+    // 检查格子是否可行走
+    private bool IsWalkable(MapGrid grid)
+    {
+        return mapMaker.isRoadType(grid.Type) || grid.Type == GridType.Center;
+    }
+
+    // 重建路径
+    private List<MapGrid> ReconstructPath(Dictionary<MapGrid, MapGrid> cameFrom, MapGrid current)
+    {
+        List<MapGrid> path = new List<MapGrid>();
+        path.Add(current);
+        
+        while (cameFrom.ContainsKey(current))
+        {
+            current = cameFrom[current];
+            path.Insert(0, current);
+        }
+        
+        return path;
     }
 
     // 根据当前位置获取所在格子
@@ -398,5 +482,58 @@ public class EnemyCommon : MonoBehaviour
     {
         get { return distanceToCenter; }
         set { distanceToCenter = value; }
+    }
+
+    // BFS寻路算法实现
+    private List<MapGrid> CalculatePathBFS(MapGrid start, MapGrid goal)
+    {
+        // 使用队列进行BFS搜索
+        Queue<MapGrid> queue = new Queue<MapGrid>();
+        // 记录已访问的节点
+        HashSet<MapGrid> visited = new HashSet<MapGrid>();
+        // 记录每个节点的来源节点，用于重建路径
+        Dictionary<MapGrid, MapGrid> cameFrom = new Dictionary<MapGrid, MapGrid>();
+        
+        // 初始化
+        queue.Enqueue(start);
+        visited.Add(start);
+        cameFrom[start] = null;
+        
+        bool foundPath = false;
+        
+        // BFS主循环
+        while (queue.Count > 0 && !foundPath)
+        {
+            MapGrid current = queue.Dequeue();
+            
+            // 如果到达目标，结束搜索
+            if (current == goal)
+            {
+                foundPath = true;
+                break;
+            }
+            
+            // 检查所有相邻节点
+            foreach (MapGrid neighbor in mapMaker.GetNeighborGrids(current))
+            {
+                // 只考虑可行走且未访问的节点
+                if (IsWalkable(neighbor) && !visited.Contains(neighbor))
+                {
+                    queue.Enqueue(neighbor);
+                    visited.Add(neighbor);
+                    cameFrom[neighbor] = current;
+                }
+            }
+        }
+        
+        // 如果找到路径，重建并返回
+        if (foundPath)
+        {
+            return ReconstructPath(cameFrom, goal);
+        }
+        
+        // 没找到路径，返回空列表
+        Debug.LogWarning("BFS也无法找到路径，这可能是地图设计问题");
+        return new List<MapGrid>();
     }
 }

@@ -21,6 +21,9 @@ public class MechaClockControl : MonoBehaviour
     // 添加新的变量来存储重叠的防御塔
     private List<towerCommon> overlappingTowers = new List<towerCommon>();
     
+    // 是否由 TimeManager 控制
+    private bool isControlledByTimeManager = false;
+    
     public void Initialize(BattleController controller)
     {
         battleController = controller;
@@ -46,6 +49,16 @@ public class MechaClockControl : MonoBehaviour
 
         // 设置时钟为不活动状态
         isClockActive = false;
+
+        // 检查是否存在 TimeManager
+        if (TimeManager.Instance != null)
+        {
+            isControlledByTimeManager = true;
+            
+            DebugLevelControl.Log("机械时钟由 TimeManager 控制",
+                DebugLevelControl.DebugModule.MechaClock,
+                DebugLevelControl.LogLevel.Info);
+        }
 
         // 启动协程
         StartCoroutine(UpdateClockHands());
@@ -85,6 +98,12 @@ public class MechaClockControl : MonoBehaviour
     public void SetClockActive(bool active)
     {
         isClockActive = active;
+        
+        // 如果由 TimeManager 控制，则不启动本地更新
+        if (!isControlledByTimeManager && active)
+        {
+            StartCoroutine(UpdateClockHands());
+        }
     }
 
     public void SetClockTime(float timeInSeconds)
@@ -187,6 +206,12 @@ public class MechaClockControl : MonoBehaviour
     {
         while (true)
         {
+            // 如果由 TimeManager 控制，则退出本地更新
+            if (isControlledByTimeManager)
+            {
+                yield break;
+            }
+            
             if (isClockActive)
             {
                 float totalMinutes = timeOffset / 60f;
@@ -196,7 +221,6 @@ public class MechaClockControl : MonoBehaviour
                 float minuteAngle = minutes * 6f;
                 float hourAngle = hours * 30f + minutes * 0.5f;
 
-                // 修复：不要再减去startMinuteAngle和startHourAngle
                 StartCoroutine(AnimateHandRotation(minuteHand, -minuteAngle));
                 StartCoroutine(AnimateHandRotation(hourHand, -hourAngle));
 

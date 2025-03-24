@@ -23,9 +23,19 @@ MonoBehaviour:
   towerSprite: {fileID: 21300000, guid: 15ca01bf55183d743bfc21872c404db0, type: 3}
   bulletPrefab: {fileID: 1285418151523038609, guid: 8250322fa3b35c84980a702a8ff5f8fb, type: 3}
   attackRange: 5
-  cost: 50
+  cost: 150
   skillType: 2
   skillDamage: 50
   skillRange: 5
   skillName: Speed Up
   skillDescription: Increase the attack speed
+  timeEffect:
+    isDayTimeEnhanced: 1
+    enhancedDamageMultiplier: 1.5
+    enhancedSpeedMultiplier: 1.5
+    enhancedRangeMultiplier: 1.2
+    enhancedSkillTimeMultiplier: 1.5
+    frenzyHour: 12
+    frenzyMinute: 0
+    enhancedEffectDescription: "\u5728\u7279\u5B9A\u65F6\u95F4\u83B7\u5F97\u5C5E\u6027\u63D0\u5347"
+    frenzySkillDescription: "\u5728\u7279\u5B9A\u65F6\u95F4\u70B9\u89E6\u53D1\u5F3A\u529B\u6280\u80FD"

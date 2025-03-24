@@ -104,6 +104,9 @@ public class DigitalClockControl : MonoBehaviour
 
     private BattleController battleController;
 
+    // 是否由 TimeManager 控制
+    private bool isControlledByTimeManager = false;
+
     public void Initialize(BattleController controller)
     {
         battleController = controller;
@@ -111,6 +114,16 @@ public class DigitalClockControl : MonoBehaviour
 
         // 设置时钟为不活动状态
         isClockActive = false;
+
+        // 检查是否存在 TimeManager
+        if (TimeManager.Instance != null)
+        {
+            isControlledByTimeManager = true;
+            
+            DebugLevelControl.Log("电子表由 TimeManager 控制",
+                DebugLevelControl.DebugModule.DigitalClock,
+                DebugLevelControl.LogLevel.Info);
+        }
 
         StartCoroutine(UpdateClock());
 
@@ -142,6 +155,12 @@ public class DigitalClockControl : MonoBehaviour
     public void SetClockActive(bool active)
     {
         isClockActive = active;
+        
+        // 如果由 TimeManager 控制，则不启动本地更新
+        if (!isControlledByTimeManager && active)
+        {
+            StartCoroutine(UpdateClock());
+        }
     }
 
     IEnumerator UpdateClock()
@@ -149,6 +168,13 @@ public class DigitalClockControl : MonoBehaviour
         while (true)
         {            
             yield return new WaitForSeconds(2f);   // 每2秒更新一次,相当于走过了1分钟
+            
+            // 如果由 TimeManager 控制，则退出本地更新
+            if (isControlledByTimeManager)
+            {
+                yield break;
+            }
+            
             if (isClockActive)
             {
                 UpdateDisplay(startTime.Hour, startTime.Minute);
