@@ -1,4 +1,4 @@
-Library: C:\Users\Klin\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
+Library: C:\Users\Klin\OneDrive\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
 --platform=Windows
 --backend=burst-llvm-16
 --target=X64_SSE2
@@ -9,10 +9,10 @@ Library: C:\Users\Klin\Desktop\workspace\game_design\project2_Demo\Time_Guardian
 --target-framework=NetFramework
 --linker-options=PdbAltPath="Time Guardian_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=C:\Users\Klin\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Temp\Burst
+--temp-folder=C:\Users\Klin\OneDrive\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/2022.3.49f1c1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
---decode-folder=C:\Users\Klin\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Library\Burst
---output=C:\Users\Klin\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
+--decode-folder=C:\Users\Klin\OneDrive\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Library\Burst
+--output=C:\Users\Klin\OneDrive\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.Burst.BurstCompiler+BurstCompilerHelper, Unity.Burst, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::IsBurstEnabled()--8c2be93e18276203cbd918daa2748a10
@@ -56,10 +56,10 @@ Library: C:\Users\Klin\Desktop\workspace\game_design\project2_Demo\Time_Guardian
 --target-framework=NetFramework
 --linker-options=PdbAltPath="Time Guardian_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=C:\Users\Klin\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Temp\Burst
+--temp-folder=C:\Users\Klin\OneDrive\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/2022.3.49f1c1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
---decode-folder=C:\Users\Klin\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Library\Burst
---output=C:\Users\Klin\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
+--decode-folder=C:\Users\Klin\OneDrive\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Library\Burst
+--output=C:\Users\Klin\OneDrive\Desktop\workspace\game_design\project2_Demo\Time_Guardian\Time Guardian\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.Burst.BurstCompiler+BurstCompilerHelper, Unity.Burst, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::IsBurstEnabled()--8c2be93e18276203cbd918daa2748a10
