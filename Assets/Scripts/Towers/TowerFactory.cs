@@ -25,10 +25,18 @@ public enum TowerColor
     Blue
 }
 
+public enum TowerCategory
+{
+    Single,    // 单体
+    Area,      // 群攻
+    Support,   // 辅助
+    Control    // 控制
+}
+
 public class TowerFactory : MonoBehaviour 
 {
     [SerializeField] private GameObject towerBasePrefab;
-    [SerializeField] private TowerData[] towerConfigs;
+    [SerializeField] public TowerData[] towerConfigs;
     public static TowerFactory Instance;
 
     private void Awake()

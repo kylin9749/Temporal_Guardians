@@ -112,6 +112,7 @@ MonoBehaviour:
   zoneControl: {fileID: 3259975725431720112}
   towerCombineConfirmPanel: {fileID: 452379480417049598, guid: e583d9d0358e19549a5b96b5c2cb4f05, type: 3}
   comboTransform: {fileID: 7614404504489242275}
+  AttackRangeImage: {fileID: 7793991104460573238}
   towerPanel: {fileID: 452379480417049598, guid: a31b9ae3658993741a53c8e23e71f23a, type: 3}
   towerInfoPanelPrefab: {fileID: 4740788907171849994, guid: 150272749ab2b31488b74c0a314a6fca, type: 3}
 --- !u!58 &7166993577156927007

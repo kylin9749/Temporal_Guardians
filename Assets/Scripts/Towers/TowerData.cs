@@ -26,5 +26,8 @@ public class TowerData : ScriptableObject
     [Header("时间相关效果")]
     public TowerTimeEffect timeEffect;  // 时间相关效果配置
 
+    [Header("塔类型分类")]
+    public TowerCategory towerCategory;
+
     // ... 其他技能相关参数 ...
 }

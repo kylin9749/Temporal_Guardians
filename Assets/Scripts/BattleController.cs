@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class BattleController : MonoBehaviour
 {
@@ -48,6 +50,14 @@ public class BattleController : MonoBehaviour
     // 添加配置项
     [SerializeField] private int pathAnimationLoops = -1; // 动画循环次数，-1表示无限循环
 
+    [SerializeField] private GameObject towerInfoPanelPrefab;
+    [SerializeField] private TowerButtonsPanel towerButtonsPanel;
+    [SerializeField] private Canvas mainCanvas;
+    private GameObject currentInfoPanel;
+
+    [SerializeField] private GameObject towerSelectionScreenPrefab;
+    private GameObject towerSelectionScreen;
+
     void Awake()
     {
 
@@ -72,6 +82,8 @@ public class BattleController : MonoBehaviour
         }
         //初始化位置联动系统
         //towerComboControl = new TowerComboControl();
+
+
     }
 
     public void InitialLevelConfig(string levelIndex)
@@ -163,6 +175,17 @@ public class BattleController : MonoBehaviour
         
         // 初始化后更新生成点状态
         UpdateSpawnPointsVisibility();
+
+        // 在初始化结束后，检查是否需要显示防御塔选择界面
+        if (PlayerManager.Instance != null && PlayerManager.Instance.NeedTowerSelectionScreen())
+        {
+            ShowTowerSelectionScreen();
+        }
+        else
+        {
+            // 如果不需要选择界面，直接使用所有已解锁的防御塔或默认选择
+            StartLevelAfterTowerSelection();
+        }
     }
     private void InitUI()
     {
@@ -170,6 +193,8 @@ public class BattleController : MonoBehaviour
         healthText.text = $"Health: {currentLevelData.initialHealth}";
         healthTextCenter.text = currentLevelData.initialHealth.ToString();
         UpdateWaveText();  // 初始化波数显示
+
+        InitializeTowerButtons();
     }
 
     // 添加更新波数显示的方法
@@ -360,6 +385,16 @@ public class BattleController : MonoBehaviour
             endGameUIString.text = "Game Win";
             isEndGame = true;
         }
+
+        // 检测点击空白区域关闭面板
+        if (currentInfoPanel != null && Input.GetMouseButtonDown(0))
+        {
+            // 如果鼠标点击不在UI上，则关闭面板
+            if (!EventSystem.current.IsPointerOverGameObject())
+            {
+                CloseTowerInfoPanel();
+            }
+        }
     }
 
     // 提取出专门的方法来更新生成点可见性
@@ -392,17 +427,6 @@ public class BattleController : MonoBehaviour
 
     private void createTower(TowerType towerType)
     {
-        // 检查是否有防御塔正在选择Combo
-        /*
-        if (towerComboControl.IsInComboMode())
-        {
-            if (UITipManager.Instance != null)
-            {
-                UITipManager.Instance.ShowTip("请先完成当前的组合操作");
-            }
-            return;
-        }
-        */
         GameObject tower = TowerFactory.Instance.CreateTower(towerType, GetMousePosition(), this);
     }
 
@@ -743,4 +767,142 @@ public class BattleController : MonoBehaviour
         pathIndicators.Clear();
     }
 
+    public void ShowTowerInfoPanel(TowerData towerData)
+    {
+        // 如果面板已经存在，先销毁
+        if (currentInfoPanel != null)
+        {
+            Destroy(currentInfoPanel);
+        }
+        
+        // 实例化信息面板
+        currentInfoPanel = Instantiate(towerInfoPanelPrefab, mainCanvas.transform);
+        
+        // 填充防御塔信息
+        FillTowerInfo(currentInfoPanel, towerData);
+        
+        // 获取面板上的关闭按钮并添加监听
+        Button closeButton = currentInfoPanel.transform.Find("CloseButton").GetComponent<Button>();
+        if (closeButton != null)
+        {
+            closeButton.onClick.AddListener(CloseTowerInfoPanel);
+        }
+    }
+
+    // 填充塔信息
+    private void FillTowerInfo(GameObject panel, TowerData data)
+    {
+        if (panel == null || data == null) return;
+        
+        // 通过Find查找并获取组件
+        TextMeshProUGUI nameText = panel.transform.Find("NameText").GetComponent<TextMeshProUGUI>();
+        Image iconImage = panel.transform.Find("IconImage").GetComponent<Image>();
+        TextMeshProUGUI damageText = panel.transform.Find("DamageText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI attackSpeedText = panel.transform.Find("AttackSpeedText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI mpText = panel.transform.Find("MpText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI rangeText = panel.transform.Find("RangeText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI costText = panel.transform.Find("CostText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI skillNameText = panel.transform.Find("SkillNameText").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI skillDescText = panel.transform.Find("SkillDescText").GetComponent<TextMeshProUGUI>();
+        
+        // 设置防御塔名称
+        nameText.text = data.towerName;
+        
+        // 设置防御塔图标
+        iconImage.sprite = data.towerSprite;
+        
+        // 设置攻击伤害
+        damageText.text = "伤害: " + data.damage;
+        
+        // 设置攻击速度
+        attackSpeedText.text = "攻速: " + data.attackSpeed;
+        
+        // 设置总蓝量
+        mpText.text = "魔法值: " + data.totalMp;
+        
+        // 设置攻击范围
+        rangeText.text = "攻击范围: " + data.attackRange;
+        
+        // 设置建造费用
+        costText.text = "费用: " + data.cost;
+        
+        // 设置技能名称
+        skillNameText.text = "技能: " + data.skillName;
+        
+        // 设置技能描述
+        skillDescText.text = data.skillDescription;
+    }
+
+    // 添加关闭面板方法
+    public void CloseTowerInfoPanel()
+    {
+        if (currentInfoPanel != null)
+        {
+            Destroy(currentInfoPanel);
+            currentInfoPanel = null;
+        }
+    }
+
+    private void InitializeTowerButtons()
+    {
+        if (towerButtonsPanel != null)
+        {
+            // 获取当前选择的防御塔数据
+            List<TowerData> selectedTowerData = new List<TowerData>();
+            
+            if (PlayerManager.Instance != null)
+            {
+                List<TowerType> selectedTypes = PlayerManager.Instance.selectedTowers;
+                
+                // 如果没有选择，则使用所有已解锁的防御塔（不超过最大数量）
+                if (selectedTypes.Count == 0)
+                {
+                    selectedTypes = new List<TowerType>(PlayerManager.Instance.playerData.unlockedTowers);
+                    if (selectedTypes.Count > PlayerManager.Instance.maxTowersPerLevel)
+                    {
+                        selectedTypes = selectedTypes.GetRange(0, PlayerManager.Instance.maxTowersPerLevel);
+                    }
+                    PlayerManager.Instance.SetSelectedTowers(selectedTypes);
+                }
+                
+                // 获取每种类型对应的防御塔数据
+                foreach (TowerType type in selectedTypes)
+                {
+                    TowerData data = System.Array.Find(TowerFactory.Instance.towerConfigs, t => t.towerType == type);
+                    if (data != null)
+                    {
+                        selectedTowerData.Add(data);
+                    }
+                }
+            }
+            else
+            {
+                // 如果没有PlayerManager实例，则使用前8个可用的防御塔
+                foreach (TowerData data in TowerFactory.Instance.towerConfigs)
+                {
+                    if (data != null && selectedTowerData.Count < 8)
+                    {
+                        selectedTowerData.Add(data);
+                    }
+                }
+            }
+            
+            // 初始化按钮面板
+            towerButtonsPanel.Initialize(this, selectedTowerData.ToArray());
+        }
+    }
+
+    private void ShowTowerSelectionScreen()
+    {
+        // 实例化选择界面
+        towerSelectionScreen = Instantiate(towerSelectionScreenPrefab, mainCanvas.transform);
+    }
+
+    public void StartLevelAfterTowerSelection()
+    {
+        // 初始化防御塔按钮
+        InitializeTowerButtons();
+        
+        // 可以在这里添加其他游戏开始的逻辑
+    }
 }

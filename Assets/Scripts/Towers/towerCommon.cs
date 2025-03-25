@@ -32,6 +32,7 @@ public class towerCommon : MonoBehaviour
     public GameObject zoneControl;
     [SerializeField] private GameObject towerCombineConfirmPanel; // 在Inspector中指定Panel预制体
     [SerializeField] private Transform comboTransform;
+    [SerializeField] private GameObject AttackRangeImage;
 
     // 防御塔技能组件
     protected TowerSkillCommon skillComponent;
@@ -273,21 +274,17 @@ public class towerCommon : MonoBehaviour
     }
 
 #region 防御塔放置相关
-    // 处理防御塔放置相关的逻辑
+    // 更新处理防御塔放置的逻辑
     private void HandleTowerPlacement()
     {
+        // 移除处理鼠标输入的代码，由拖拽事件处理
         UpdateTowerPreview();
         
-        // 处理鼠标输入
+        // 只保留右键取消逻辑
         if (Input.GetMouseButtonDown(1))
         {
             CancelTowerPlacement();
             return;
-        }
-        
-        if (Input.GetMouseButtonDown(0))
-        {
-            TryPlaceTower();
         }
     }
 
@@ -309,8 +306,8 @@ public class towerCommon : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // 尝试放置防御塔
-    private void TryPlaceTower()
+    // 将TryPlaceTower改为public，允许从外部调用
+    public void TryPlaceTower()
     {
         if (!CanAffordTower())
         {
@@ -375,6 +372,19 @@ public class towerCommon : MonoBehaviour
         if (mainCanvas == null)
         {
             Debug.LogError("Cannot find main Canvas!");
+        }
+    }
+
+    // 添加新方法供TowerButton调用
+    public void UpdateTowerPreviewPosition(Vector3 mousePosition)
+    {
+        // 使用传入的鼠标位置更新最近格子
+        nearestBase = battleController.GetMapMaker().GetNearestBase(mousePosition);
+        if (nearestBase != null && lastNearestBase != nearestBase)
+        {
+            transform.position = nearestBase.transform.position;
+            attackRangeImage.gameObject.SetActive(true);
+            lastNearestBase = nearestBase;
         }
     }
 #endregion
@@ -468,10 +478,12 @@ public class towerCommon : MonoBehaviour
             if (hitCollider != null && hitCollider.gameObject == gameObject)
             {
                 ShowTowerInfoPanel();
+                AttackRangeImage.SetActive(true);
             }
             else
             {
                 HideTowerInfoPanel();
+                AttackRangeImage.SetActive(false);
             }
         }
     }
