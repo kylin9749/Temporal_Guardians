@@ -89,9 +89,9 @@ public class TowerButton : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             // 检查是否有足够金钱
             if (battleController.GetMoney() < towerData.cost)
             {
-                if (UITipManager.Instance != null)
+                if (battleController.TipManager  != null)
                 {
-                    UITipManager.Instance.ShowTip("金币不足，无法建造");
+                    battleController.TipManager.ShowTip("金币不足，无法建造");
                 }
                 // 重要：标记拖拽无效并中止拖拽流程
                 isValidDrag = false;

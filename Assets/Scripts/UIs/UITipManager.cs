@@ -1,32 +1,19 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-
+using TMPro;
 public class UITipManager : MonoBehaviour
 {
-    public static UITipManager Instance { get; private set; }
-    
-    public Text tipText;        // UI提示文本组件
-    public float showTime = 2f; // 提示显示时间
-    
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
+    public GameObject tipPanel;        // UI提示文本panel
+    public TextMeshProUGUI tipText;        // UI提示文本组件
+    public float showTime = 2f;         // 提示显示时间
     
     public void ShowTip(string message)
     {
-        if (tipText != null)
+        if (tipPanel != null && tipText != null)
         {
             tipText.text = message;
-            tipText.gameObject.SetActive(true);
+            tipPanel.SetActive(true);
             StartCoroutine(HideTipAfterDelay());
         }
     }
@@ -34,6 +21,6 @@ public class UITipManager : MonoBehaviour
     private IEnumerator HideTipAfterDelay()
     {
         yield return new WaitForSeconds(showTime);
-        tipText.gameObject.SetActive(false);
+        tipPanel.SetActive(false);
     }
 }

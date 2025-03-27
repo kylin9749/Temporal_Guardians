@@ -60,6 +60,7 @@ public class towerCommon : MonoBehaviour
         // 保存数据引用
         towerData = data;
         battleController = controller;
+        tipManager = controller.TipManager;
 
         // 移除现有的技能组件（如果有）
         var oldSkill = GetComponent<TowerSkillCommon>();
@@ -220,9 +221,6 @@ public class towerCommon : MonoBehaviour
             scale.x = 0;
             mpBar.localScale = scale;
         }
-        
-        // 获取提示管理器的引用
-        tipManager = UITipManager.Instance;
     }
 
     public void Update()
@@ -312,12 +310,14 @@ public class towerCommon : MonoBehaviour
         if (!CanAffordTower())
         {
             ShowCannotAffordTip();
+            CancelTowerPlacement();
             return;
         }
 
         if (IsGridOccupied())
         {
             ShowGridOccupiedTip();
+            CancelTowerPlacement();
             return;
         }
 

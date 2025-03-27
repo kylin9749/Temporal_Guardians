@@ -58,6 +58,8 @@ public class BattleController : MonoBehaviour
     [SerializeField] private GameObject towerSelectionScreenPrefab;
     private GameObject towerSelectionScreen;
 
+    public UITipManager TipManager {get; set;}
+
     void Awake()
     {
 
@@ -107,7 +109,7 @@ public class BattleController : MonoBehaviour
         currentChapterData = chapterConfig;
         mapMaker = GetComponent<MapMaker>();
         mapMaker.InitMap(chapterConfig.xColumn, chapterConfig.yRow);
-
+        TipManager = GetComponent<UITipManager>();
         // 加载关卡配置
         var levelConfig = System.Array.Find(levelConfigs, x => x.levelName == levelIndex);
         if (levelConfig == null)
