@@ -20,9 +20,22 @@ public class PlayerData
     // ...
 }
 
-public class PlayerManager : MonoBehaviour
+public class PlayerManager
 {
-    public static PlayerManager Instance { get; private set; }
+    private static PlayerManager _instance;
+    public static PlayerManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = new PlayerManager();
+                _instance.LoadPlayerData();
+            }
+            return _instance;
+        }
+    }
+
     public PlayerData playerData = new PlayerData();
     
     // 当前选择的防御塔
@@ -30,19 +43,10 @@ public class PlayerManager : MonoBehaviour
     
     // 每关可选的最大防御塔数量
     public int maxTowersPerLevel = 8;
-    
-    private void Awake()
+
+    private PlayerManager()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            LoadPlayerData();
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        // 私有构造函数
     }
     
     // 保存玩家数据
@@ -91,5 +95,15 @@ public class PlayerManager : MonoBehaviour
     public bool NeedTowerSelectionScreen()
     {
         return playerData.unlockedTowers.Count > maxTowersPerLevel;
+    }
+
+    // 添加清理方法
+    public static void Cleanup()
+    {
+        if (_instance != null)
+        {
+            _instance.SavePlayerData(); // 保存最终数据
+            _instance = null;
+        }
     }
 }

@@ -43,6 +43,9 @@ public class MainMenuController : MonoBehaviour
     // 退出游戏按钮点击事件
     public void OnExitButtonClicked()
     {
+        // 保存并清理数据
+        PlayerManager.Cleanup();
+        
         // 退出游戏
         Application.Quit();
     }

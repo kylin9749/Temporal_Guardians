@@ -386,6 +386,16 @@ public class BattleController : MonoBehaviour
             endGameUI.SetActive(true);
             endGameUIString.text = "Game Win";
             isEndGame = true;
+            
+            // 记录通关状态
+            if (PlayerManager.Instance != null)
+            {
+                if (!PlayerManager.Instance.playerData.completedLevels.Contains(currentLevel))
+                {
+                    PlayerManager.Instance.playerData.completedLevels.Add(currentLevel);
+                    PlayerManager.Instance.SavePlayerData();
+                }
+            }
         }
 
         // 检测点击空白区域关闭面板
@@ -716,9 +726,15 @@ public class BattleController : MonoBehaviour
         int loopCount = 0;
         while (pathAnimationLoops == -1 || loopCount < pathAnimationLoops)
         {
+            // 检查指示器是否已被销毁
+            if (indicator == null) yield break;
+
             // 沿路径移动指示器
             for (int i = 0; i < path.Count - 1; i++)
             {
+                // 再次检查指示器是否存在
+                if (indicator == null) yield break;
+
                 Vector3 startPos = path[i].transform.position;
                 Vector3 endPos = path[i + 1].transform.position;
                 float distance = Vector3.Distance(startPos, endPos);
@@ -735,12 +751,17 @@ public class BattleController : MonoBehaviour
                     yield return null;
                 }
                 
+                // 在设置最终位置前检查指示器是否存在
+                if (indicator == null) yield break;
                 indicator.transform.position = endPos;
             }
             
-            // 立即将指示器移回起点
-            if (indicator != null && path.Count > 0)
+            // 在移回起点前检查指示器是否存在
+            if (indicator == null) yield break;
+            if (path.Count > 0)
+            {
                 indicator.transform.position = path[0].transform.position;
+            }
             
             yield return new WaitForSeconds(0.5f);
             

@@ -12,13 +12,39 @@ public class LevelController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        selectedChapter = PlayerPrefs.GetInt("SelectedChapter", 1); // 默认值为1
-
-        // 根据chapter值进行相应的关卡初始化
+        selectedChapter = PlayerPrefs.GetInt("SelectedChapter", 1);
+        
+        // 初始化关卡按钮
         for (int i = 0; i < levelButtons.Length; i++)
         {
             levelButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = "Level" + (i + 1).ToString();
+            UpdateLevelButtonState(i);
         }
+    }
+
+    private void UpdateLevelButtonState(int levelIndex)
+    {
+        string levelKey = $"{selectedChapter}_{levelIndex + 1}";
+        bool isUnlocked = IsLevelUnlocked(levelIndex + 1);
+        
+        levelButtons[levelIndex].interactable = isUnlocked;
+        
+        // 可选：为未解锁的关卡添加锁定图标
+        Transform lockIcon = levelButtons[levelIndex].transform.Find("LockIcon");
+        if (lockIcon != null)
+        {
+            lockIcon.gameObject.SetActive(!isUnlocked);
+        }
+    }
+    
+    private bool IsLevelUnlocked(int levelNumber)
+    {
+        if (levelNumber <= 1) return true; 
+        
+        // 检查前一关是否通关
+        string previousLevelKey = $"{selectedChapter}_{levelNumber - 1}";
+        return PlayerManager.Instance != null && 
+               PlayerManager.Instance.playerData.completedLevels.Contains(previousLevelKey);
     }
 
     // Update is called once per frame
@@ -30,11 +56,16 @@ public class LevelController : MonoBehaviour
     // 加载关卡
     public void LoadLevel(int level)
     {
-        // 保存当前关卡编号
+        if (!IsLevelUnlocked(level))
+        {
+            // 可以显示提示信息
+            Debug.Log("需要先通关前一关卡");
+            return;
+        }
+        
         PlayerPrefs.SetString("CurrentLevel", selectedChapter.ToString() + "_" + level.ToString());
         PlayerPrefs.SetInt("SelectedChapter", selectedChapter);
         PlayerPrefs.Save();
-        // 加载游戏场景
         SceneManager.LoadScene("BattleScene");
     }
 
