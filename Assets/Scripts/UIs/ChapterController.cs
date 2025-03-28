@@ -39,12 +39,45 @@ public class ChapterController : MonoBehaviour
     
     private bool IsChapterUnlocked(int chapterNumber)
     {
+        // 第一章默认解锁
         if (chapterNumber <= 1) return true;
         
-        // 检查前一章节是否有通关的关卡
+        // 方案1：检查前一章节的最后一关是否通关（更简单，推荐）
         string previousChapter = (chapterNumber - 1).ToString();
-        return PlayerManager.Instance.playerData.completedLevels.Any(level => 
-            level.StartsWith(previousChapter + "_"));
+        string lastLevelKey = $"{previousChapter}_{GetLastLevelNumberInChapter(chapterNumber - 1)}";
+        return PlayerManager.Instance.playerData.completedLevels.Contains(lastLevelKey);
+        
+        // 方案2：检查前一章节的所有关卡是否通关（更严格）
+        /* 
+        string previousChapter = (chapterNumber - 1).ToString();
+        int lastLevelNumber = GetLastLevelNumberInChapter(chapterNumber - 1);
+        
+        // 检查前一章节的每一关是否都已通关
+        for (int i = 1; i <= lastLevelNumber; i++)
+        {
+            string levelKey = $"{previousChapter}_{i}";
+            if (!PlayerManager.Instance.playerData.completedLevels.Contains(levelKey))
+            {
+                return false; // 只要有一关未通关，就返回false
+            }
+        }
+        return true; // 所有关卡都已通关
+        */
+    }
+
+    // 获取指定章节的最后一关编号
+    private int GetLastLevelNumberInChapter(int chapterNumber)
+    {
+        // 这里可以根据实际情况返回每个章节的最后一关编号
+        // 例如，可以硬编码，或者从配置文件读取，或者通过其他方式获取
+        switch (chapterNumber)
+        {
+            case 1: return 12; // 第一章有12关
+            case 2: return 12; // 第二章有12关
+            case 3: return 12; // 第三章有12关
+            case 4: return 12; // 第四章有12关
+            default: return 12; // 默认12关
+        }
     }
 
     void Update()
