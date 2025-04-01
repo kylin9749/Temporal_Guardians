@@ -15,7 +15,6 @@ MonoBehaviour:
   levelName: 1_1
   initialMoney: 500
   initialHealth: 10
-  levelType: 0
   startTimeHour: 0
   waves:
   - waveDelay: 0
@@ -44,7 +43,7 @@ MonoBehaviour:
     - enemyType: 0
       spawnDelay: 1
       spawnPoint: 0
-  - waveDelay: 30
+  - waveDelay: 20
     enemies:
     - enemyType: 1
       spawnDelay: 0
@@ -79,7 +78,7 @@ MonoBehaviour:
     - enemyType: 1
       spawnDelay: 1
       spawnPoint: 1
-  - waveDelay: 60
+  - waveDelay: 20
     enemies:
     - enemyType: 2
       spawnDelay: 0
@@ -105,7 +104,7 @@ MonoBehaviour:
     - enemyType: 2
       spawnDelay: 1
       spawnPoint: 8
-  - waveDelay: 90
+  - waveDelay: 20
     enemies:
     - enemyType: 2
       spawnDelay: 0
